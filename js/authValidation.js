@@ -66,10 +66,11 @@ async function validateSignUpData(event) {
             return showError(response.message);
           }
         } catch (error) {
+          console.log(error);
           return showError(error);
         }
       } else {
-        showError(error);
+        showError("Internal Server Error");
       }
     }
   };

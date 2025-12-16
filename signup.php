@@ -22,10 +22,9 @@
     <div class="error-container">
       <p class="error">Hello</p>
     </div>
+    <script src="./js/authValidation.js"></script>
     <form
       id="signupForm"
-      method="post"
-      action="test.php"
       onsubmit="return validateSignUpData(event)">
       <label for="fullname">Full Name</label>
       <input
@@ -72,7 +71,7 @@
     </form>
   </div>
 
-  <script src="./js/authValidation.js"></script>
+
 </body>
 
 </html>

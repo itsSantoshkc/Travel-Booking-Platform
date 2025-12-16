@@ -1,4 +1,5 @@
 <?php
+include '../model/User.php';
 header("Content-Type: application/json");
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
@@ -15,6 +16,8 @@ $name = trim($_POST['name'] ?? '');
 $email = trim($_POST['email'] ?? '');
 $phone = trim($_POST['phone'] ?? '');
 $password = $_POST['password'] ?? '';
+
+
 
 
 if (empty($name) || empty($email) || empty($phone) || empty($password)) {
@@ -57,10 +60,33 @@ if (!preg_match($passwordRegex, $password)) {
 
 $hash = password_hash($password, PASSWORD_BCRYPT);
 
+//  $userData['firstName'],
+//                 $userData['lastName'],
+//                 $userData['email'],
+//                 $userData['password'],
+//                 $userData['dateOfBirth'],
+//                 $userData['phone'],
+//                 $userData['role']
 
 
-http_response_code(201);
+$user = new User($conn);
+$newUser =  array("firstName" => $name, "lastName" => $name, "email" => $email, "password" =>  $hash, "dateOfBirth" => 0, "phone" => $phone, "role" => "user");
+$userData = $user->newUser($newUser);
+
+
+if ($userData['success']) {
+    $_SESSION["userID"] = $userData['userId'];
+    $_SESSION["role"] = "user";
+
+    http_response_code(200);
+    echo json_encode([
+        "success" => true,
+        "message" => "Registration successful"
+    ]);
+    exit;
+}
+http_response_code(500);
 echo json_encode([
-    "success" => true,
-    "message" => "Registration successful"
+    "success" => false,
+    "message" => "Internal Server Error"
 ]);
