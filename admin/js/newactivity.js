@@ -28,7 +28,6 @@ const addButton = document.getElementById("addButton");
 const eventType = document.getElementById("eventType");
 
 eventType.addEventListener("change", () => {
-  console.log(timeBox);
   if (eventType.checked) {
     if (timeBox.classList.contains("flex")) {
       timeBox.classList.toggle("flex");
@@ -61,10 +60,10 @@ const addNewTime = () => {
   const fromVal = fromTime.value;
   const toVal = toTime.value;
 
-  if (toVal <= fromVal) {
-    alert("Error: 'To Time' must be later than 'From Time'.");
-    return;
-  }
+  // if (toVal <= fromVal) {
+  //   alert("Error: 'To Time' must be later than 'From Time'.");
+  //   return;
+  // }
 
   const span = document.createElement("span");
   const timeValue = document.createElement("span");
@@ -73,7 +72,7 @@ const addNewTime = () => {
   crossBtn.textContent = "X";
   crossBtn.classList = ["cursor-pointer"];
   span.classList = [
-    "bg-slate-300 p-1 flex items-center justify-around row-span-1 m-1 rounded-lg text-slate-600 text-xs",
+    "bg-slate-300 p-1 flex items-center justify-around row-span-1 m-2 rounded-lg text-slate-600 text-xs",
   ];
 
   timeValue.textContent = `${fromVal} - ${toVal}`;
@@ -83,8 +82,8 @@ const addNewTime = () => {
   span.appendChild(crossBtn);
   timeContainer.appendChild(span);
 
-  fromTime.value = "";
-  toTime.value = "";
+  // fromTime.value = "";
+  // toTime.value = "";
   updateButtonState(); // Update state after clearing inputs
 };
 

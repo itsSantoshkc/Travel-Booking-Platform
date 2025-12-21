@@ -7,18 +7,15 @@ include("header.php");
   include("./components/Navbar.php")
   ?>
 
-  <div class="w-full border-gray-600  flex justify-center items-center my-20">
-    <div class="w-3/6  h-16  flex rounded-3xl  shadow-lg items-center justify-between">
+  <div class="flex items-center justify-center w-full my-20 border-gray-600">
+    <div class="flex items-center justify-between w-3/6 h-16 shadow-lg rounded-3xl">
       <form class="w-[90%] *:h-16  *:focus:outline-none *:focus:bg-slate-100 *:text-xl flex justify-center items-center">
-        <input type="text" placeholder="Destination" class="
-         w-2/5   py-1 px-6 placeholder:px-2   rounded-l-3xl ">
-        <span class="flex justify-center items-center mx-1">|</span>
-        <input type="datetime-local" placeholder="Date" class="
-         w-2/5  py-1 px-2 placeholder:px-2    ">
-        <span class="flex justify-center items-center mx-1">|</span>
+        <input type="text" placeholder="Destination" class="w-2/5 px-6 py-1  placeholder:px-2 rounded-l-3xl">
+        <span class="flex items-center justify-center mx-1">|</span>
+        <input type="datetime-local" placeholder="Date" class="w-2/5 px-2 py-1  placeholder:px-2">
+        <span class="flex items-center justify-center mx-1">|</span>
 
-        <select placeholder="No of People" class="
-         w-1/5  py-1 px-2 placeholder:px-2  placeholder:text-wrap">
+        <select placeholder="No of People" class="w-1/5 px-2 py-1  placeholder:px-2 placeholder:text-wrap">
           <option value='0'>No of People</option>
           <?php
           for ($i = 1; $i < 25; $i++) {
@@ -28,9 +25,9 @@ include("header.php");
         </select>
       </form>
       <div class="w-[10%]  flex justify-start items-center h-16 rounded-r-3xl">
-        <div class="  text-white w-full h-full flex justify-center items-center  text-2xl">
-          <div class="cursor-pointer h-12 w-12 bg-red-500 text-center flex justify-center  items-center rounded-full">
-            <i class="fa  fa-search " aria-hidden="true"></i>
+        <div class="flex items-center justify-center w-full h-full text-2xl text-white ">
+          <div class="flex items-center justify-center w-12 h-12 text-center bg-red-500 rounded-full cursor-pointer">
+            <i class="fa fa-search " aria-hidden="true"></i>
           </div>
         </div>
 
@@ -40,9 +37,9 @@ include("header.php");
 
 
 
-  <div class="min-h-screen w-full flex items-center justify-center">
+  <div class="flex items-center justify-center w-full min-h-screen">
     <div
-      class="grid grid-cols-3 gap-x-24 gap-y-12 w-4/5 place-items-center"
+      class="grid w-4/5 grid-cols-3 gap-x-24 gap-y-12 place-items-center"
       id="content"></div>
   </div>
 </body>
@@ -55,12 +52,12 @@ include("header.php");
     content.innerHTML += ` <div>
           <div class="max-h-[90%] w-full  relative">
             <img
-              class="z-0  w-full h-full rounded-3xl object-contain "
+              class="z-0 object-contain w-full h-full rounded-3xl "
               src=${faker.image.urlLoremFlickr({ width: 1280, height: 960 })}
               alt="Rafting Image"
             />
             <div
-              class="absolute font-semibold bg-white text-black rounded-2xl p-2 bottom-2 right-2 z-10"
+              class="absolute z-10 p-2 font-semibold text-black bg-white rounded-2xl bottom-2 right-2"
             >
               ⭐ ${faker.number.float({
                 min: 0,
@@ -70,8 +67,8 @@ include("header.php");
             </div>
           </div>
           <div class="py-2">
-            <h3 class="font-bold text-3xl text-gray-600">${faker.commerce.product()}</h3>
-            <p class="font-semibold text-xl text-gray-600">${faker.location.city()}, ${faker.location.county()}</p>
+            <h3 class="text-3xl font-bold text-gray-600">${faker.commerce.product()}</h3>
+            <p class="text-xl font-semibold text-gray-600">${faker.location.city()}, ${faker.location.county()}</p>
           </div>
         </div>`;
   }
