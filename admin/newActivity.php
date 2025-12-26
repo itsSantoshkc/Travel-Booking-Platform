@@ -2,18 +2,10 @@
     <link rel="stylesheet" href="css/newactivity.css" />
 </head>
 <?php
-// include("./component/Sidebar.php");
+include("./component/Sidebar.php");
 include("../header.php");
 ?>
-<form class="main" onsubmit="handleSubmit(event)">
-    <!-- <div class="image-section">
-          <div class="image-large" id="imgPreviewMain"><i class="fa-solid fa-camera"><input type="file" id="imageInput" accept="image/*" style="display: none;"></i></div>
-
-          <div class="image-row">
-              <input type="file" id="imageInput" accept="image/*" hidden></div>
-              <input type="file" id="imageInput" accept="image/*" hidden></div>
-              <input type="file" id="imageInput" accept="image/*" hidden></div>
-          </div> -->
+<form class="main" action="createActivity.php" enctype="multipart/form-data" method="post" onsubmit="return handleSubmit(event)">
     <div class="flex justify-center w-[500px]">
         <div class="grid grid-cols-3 gap-5 place-content-center  *:rounded-xl ">
 
@@ -72,13 +64,13 @@ include("../header.php");
             <input type="number" id="slots" placeholder="Enter the number of slots available per activity">
         </div>
 
-    
 
-      
 
-      <?php
-      include("component/configueActivity.php");
-      ?>
+
+
+        <?php
+        include("component/configueActivity.php");
+        ?>
 
         <div class="field">
             <label>Location</label>

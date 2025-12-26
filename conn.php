@@ -7,7 +7,7 @@ $username = "root";
 $password = "";
 $dbname = "trippie";
 
-
+$baseUrl = "http://" . $_SERVER['HTTP_HOST'] . "/Activity Booking Platform/";
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);

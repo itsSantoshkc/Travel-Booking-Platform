@@ -1,8 +1,88 @@
-function handleSubmit(event) {
-  event.preventDefault();
-  // console.log(event);
-}
+async function handleSubmit(event) {
+  event.preventDefault(); // Stop page reload
 
+  const form = event.target;
+  // FormData automatically captures all inputs with a "name" attribute
+  const formData = new FormData();
+  const eventType = document.getElementById('eventType').checked ? 'one-time' : 'recurring'
+
+  // 1. Manually add the text fields (Ensure IDs match your HTML)
+  formData.append('name', document.getElementById('name').value);
+  formData.append('price', document.getElementById('price').value);
+  formData.append('description', document.getElementById('description').value);
+  formData.append('slots', document.getElementById('slots').value);
+  formData.append('location', document.getElementById('location').value)
+    ;
+  // 2. Add Schedule Data
+  formData.append('eventType', eventType);
+  formData.append('mainDate', document.getElementById('mainDate').value);
+
+  // 3. Add Time Slots (Gathering from the UI pills)
+  const slots = Array.from(document.querySelectorAll(".time-slot-pill"))
+    .map(p => p.innerText.replace('×', '').trim());
+
+  // We append them individually so PHP sees them as an array slots_list[]
+  slots.forEach(slot => {
+    formData.append('slots_list[]', slot);
+  });
+
+  if (eventType === "recurring") {
+    const dayDropdown = document.getElementById("dayDropdown");
+    const recurrenceValue = dayDropdown.value;
+    if (recurrenceValue === "everyday") {
+      // Manually add all days
+      const allDays = ["1", "2", "3", "4", "5", "6", "7"];
+      allDays.forEach(day => formData.append('days[]', day));
+    }
+    else if (recurrenceValue === "mon-fri") {
+      // Manually add work days
+      const workDays = ["2", "3", "4", "5", "6"];
+      workDays.forEach(day => formData.append('days[]', day));
+    }
+    else if (recurrenceValue === "custom") {
+      // Get only the checked boxes from the custom grid
+      const checkedBoxes = document.querySelectorAll('input[name="days[]"]:checked');
+      checkedBoxes.forEach(cb => {
+        formData.append('days[]', cb.value);
+      });
+    }
+  }
+
+  // 4. Add Images (Mapping IDs to the names PHP expects)
+  for (let i = 1; i <= 4; i++) {
+    const fileInput = document.getElementById(`img-${i}`);
+    if (fileInput.files[0]) {
+      formData.append(`image_${i}`, fileInput.files[0]);
+    }
+  }
+
+  // 5. Send to PHP via FETCH
+  // 5. Send to PHP via XMLHttpRequest
+  const xhr = new XMLHttpRequest();
+
+  // Configure the request
+  xhr.open('POST', 'createActivity.php', true);
+
+  // Handle the response
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      // Equivalent to await response.text()
+      // console.log("Server Response:", xhr.responseText);
+      // alert("Check console for server response");
+    } else {
+      console.error("Server Error:", xhr.statusText);
+    }
+  };
+
+  // Handle network errors
+  xhr.onerror = function () {
+    console.error("Request failed");
+  };
+
+  // Send the data
+  // Note: Like fetch, do NOT set Content-Type header manually when sending FormData
+  xhr.send(formData);
+}
 function handleImageChange(event) {
   const label = event.target.parentElement;
   const imgElement = label.children[1];
@@ -20,76 +100,3 @@ function handleImageChange(event) {
   }
 }
 
-const timeContainer = document.getElementById("timeContainer");
-const timeBox = document.querySelector(".timeBox");
-const fromTime = document.getElementById("fromTime");
-const toTime = document.getElementById("toTime");
-const addButton = document.getElementById("addButton");
-const eventType = document.getElementById("eventType");
-
-eventType.addEventListener("change", () => {
-  if (eventType.checked) {
-    if (timeBox.classList.contains("flex")) {
-      timeBox.classList.toggle("flex");
-      timeBox.classList.toggle("field");
-      timeBox.classList.toggle("hidden");
-    }
-  } else {
-    timeBox.classList.toggle("hidden");
-    timeBox.classList.toggle("flex");
-    timeBox.classList.toggle("field");
-  }
-});
-
-const removeTime = (event) => {
-  const timeSlotSpan = event.target.parentElement;
-  timeContainer.removeChild(timeSlotSpan);
-};
-
-const updateButtonState = () => {
-  if (fromTime.value && toTime.value) {
-    addButton.disabled = false;
-    addButton.classList.remove("button-disabled");
-  } else {
-    addButton.disabled = true;
-    addButton.classList.add("button-disabled");
-  }
-};
-
-const addNewTime = () => {
-  const fromVal = fromTime.value;
-  const toVal = toTime.value;
-
-  // if (toVal <= fromVal) {
-  //   alert("Error: 'To Time' must be later than 'From Time'.");
-  //   return;
-  // }
-
-  const span = document.createElement("span");
-  const timeValue = document.createElement("span");
-  const crossBtn = document.createElement("span");
-
-  crossBtn.textContent = "X";
-  crossBtn.classList = ["cursor-pointer"];
-  span.classList = [
-    "bg-slate-300 p-1 flex items-center justify-around row-span-1 m-2 rounded-lg text-slate-600 text-xs",
-  ];
-
-  timeValue.textContent = `${fromVal} - ${toVal}`;
-  crossBtn.addEventListener("click", (e) => removeTime(e));
-
-  span.appendChild(timeValue);
-  span.appendChild(crossBtn);
-  timeContainer.appendChild(span);
-
-  // fromTime.value = "";
-  // toTime.value = "";
-  updateButtonState(); // Update state after clearing inputs
-};
-
-fromTime.addEventListener("change", updateButtonState);
-toTime.addEventListener("change", updateButtonState);
-
-addButton.addEventListener("click", () => {
-  addNewTime();
-});
