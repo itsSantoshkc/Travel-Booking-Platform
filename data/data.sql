@@ -59,7 +59,17 @@ CREATE TABLE reviews (
 
 -- BOOKING 
 
-
+CREATE TABLE booking(
+    booking_id VARCHAR(100) PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL, 
+    activity_id VARCHAR(100) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES user(userID), 
+    FOREIGN KEY (activity_id) REFERENCES activity(activity_id), 
+    no_of_slots INT NOT NULL, 
+    time VARCHAR(15), 
+    booked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    booked_for DATE 
+    )
     
 
 

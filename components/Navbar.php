@@ -50,30 +50,28 @@
 
 
        const avatarMenu = document.querySelector(".avatar-menu");
-       avatar.addEventListener("click", () => {
-           //When the menu is above
-           if (!avatarMenu.classList.contains("translate-y-14")) {
-               avatarMenu.classList.toggle("hidden");
-               avatarMenu.classList.toggle("flex");
-               setTimeout(() => {
-                   avatarMenu.classList.toggle("translate-y-14");
-                   avatarMenu.classList.toggle("-translate-y-48");
-               }, 0)
-           } else {
-
-               avatarMenu.classList.toggle("translate-y-14");
-               avatarMenu.classList.toggle("-translate-y-48");
-               setTimeout(() => {
+       if (avatarMenu && avatar) {
+           avatar.addEventListener("click", () => {
+               //When the menu is above
+               if (!avatarMenu.classList.contains("translate-y-14")) {
                    avatarMenu.classList.toggle("hidden");
                    avatarMenu.classList.toggle("flex");
-               }, 500)
-           }
+                   setTimeout(() => {
+                       avatarMenu.classList.toggle("translate-y-14");
+                       avatarMenu.classList.toggle("-translate-y-48");
+                   }, 0)
+               } else {
 
-           avatarMenu.classList.toggle("opacity-0");
+                   avatarMenu.classList.toggle("translate-y-14");
+                   avatarMenu.classList.toggle("-translate-y-48");
+                   setTimeout(() => {
+                       avatarMenu.classList.toggle("hidden");
+                       avatarMenu.classList.toggle("flex");
+                   }, 500)
+               }
 
+               avatarMenu.classList.toggle("opacity-0");
 
-
-
-
-       });
+           });
+       }
    </script>

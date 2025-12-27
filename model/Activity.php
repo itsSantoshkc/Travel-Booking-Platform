@@ -216,4 +216,49 @@ public function getActivityById($id)
 
     return $activity;
 }
+
+public function getTimeSlotsAndDays($id)
+{
+    $data = [
+        'slots' => [],
+        'days' => []
+    ];
+
+    try {
+        // 1. Fetch Time Slots
+        $slotSql = "SELECT time_slots FROM activity_slots WHERE activity_id = ?";
+        $slotStmt = $this->conn->prepare($slotSql);
+        $slotStmt->bind_param("s", $id);
+        $slotStmt->execute();
+        $slotResult = $slotStmt->get_result();
+        
+        while ($row = $slotResult->fetch_assoc()) {
+            $data['slots'][] = $row['time_slots'];
+        }
+
+        // 2. Fetch Recurring Days
+        $daySql = "SELECT day_id FROM activity_days WHERE activity_id = ?";
+        $dayStmt = $this->conn->prepare($daySql);
+        $dayStmt->bind_param("s", $id);
+        $dayStmt->execute();
+        $dayResult = $dayStmt->get_result();
+
+        // Mapping day IDs to Names (1=Sun, 2=Mon, etc.)
+        $dayNames = [1 => "Sun", 2 => "Mon", 3 => "Tue", 4 => "Wed", 5 => "Thu", 6 => "Fri", 7 => "Sat"];
+        
+        while ($row = $dayResult->fetch_assoc()) {
+            $dayId = $row['day_id'];
+            $data['days'][] = [
+                'id' => $dayId,
+                'name' => $dayNames[$dayId] ?? 'Unknown'
+            ];
+        }
+
+        return $data;
+
+    } catch (Exception $e) {
+        error_log("Error fetching slots/days: " . $e->getMessage());
+        return $data;
+    }
+}
 }

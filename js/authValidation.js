@@ -61,7 +61,7 @@ async function validateSignUpData(event) {
           const response = JSON.parse(xhr.responseText);
 
           if (response.success) {
-            return (window.location.href = "home.php");
+            return (window.location.href = "index.php");
           } else {
             return showError(response.message);
           }
@@ -110,7 +110,7 @@ async function validateLogInData(event) {
             if (response.role === "admin") {
               return (window.location.href = "admin/dashboard.php");
             } else {
-              return (window.location.href = "home.php");
+              return (window.location.href = "index.php");
             }
           } else {
             return showError(response.message);
