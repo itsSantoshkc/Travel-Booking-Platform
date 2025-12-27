@@ -92,13 +92,7 @@ public function getAllActivity()
     // We use LEFT JOIN so activities show up even if they don't have images yet
     // DISTINCT inside GROUP_CONCAT prevents path duplication
     $sql = "SELECT 
-                a.activity_id, 
-                a.name, 
-                a.description, 
-                a.price, 
-                a.location, 
-                a.event_type, 
-                a.starting_date,
+                a.*, 
                 GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') as image_list
             FROM activity a
             LEFT JOIN activity_images i ON a.activity_id = i.activity_id
@@ -173,11 +167,16 @@ public function searchActivities($location, $date, $people) {
 
 public function getActivityById($id)
 {
- 
+    // Fix: WHERE comes before GROUP BY. 
+    // We fetch the piped strings for images, slots, and days in one go.
     $sql = "SELECT a.*, 
-            GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') as image_list
-            FROM activity a
-            LEFT JOIN activity_images i ON a.activity_id = i.activity_id
+            GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') as image_list,
+            GROUP_CONCAT(DISTINCT t.time_slots SEPARATOR '|') as time_slots_raw, 
+            GROUP_CONCAT(DISTINCT d.day_id SEPARATOR '|') as activity_days_raw 
+            FROM activity a 
+            LEFT JOIN activity_images i ON a.activity_id = i.activity_id 
+            LEFT JOIN activity_slots t ON a.activity_id = t.activity_id
+            LEFT JOIN activity_days d ON a.activity_id = d.activity_id
             WHERE a.activity_id = ?
             GROUP BY a.activity_id";
 
@@ -189,34 +188,17 @@ public function getActivityById($id)
 
     if (!$activity) return null;
 
-   
     $activity['images'] = $activity['image_list'] ? explode('|', $activity['image_list']) : [];
     unset($activity['image_list']);
 
-    $slotStmt = $this->conn->prepare("SELECT time_slots FROM activity_slots WHERE activity_id = ?");
-    $slotStmt->bind_param("s", $id);
-    $slotStmt->execute();
-    $slotResult = $slotStmt->get_result();
-    $activity['time_slots'] = [];
-    while ($slot = $slotResult->fetch_assoc()) {
-        $activity['time_slots'][] = $slot['time_slots'];
-    }
+    $activity['time_slots'] = $activity['time_slots_raw'] ? explode('|', $activity['time_slots_raw']) : [];
+    unset($activity['time_slots_raw']);
 
-
-    if ($activity['event_type'] === 'recurring') {
-        $dayStmt = $this->conn->prepare("SELECT day_id FROM activity_days WHERE activity_id = ?");
-        $dayStmt->bind_param("s", $id);
-        $dayStmt->execute();
-        $dayResult = $dayStmt->get_result();
-        $activity['days'] = [];
-        while ($day = $dayResult->fetch_assoc()) {
-            $activity['days'][] = $day['day_id'];
-        }
-    }
+    $activity['days'] = $activity['activity_days_raw'] ? explode('|', $activity['activity_days_raw']) : [];
+    unset($activity['activity_days_raw']);
 
     return $activity;
 }
-
 public function getTimeSlotsAndDays($id)
 {
     $data = [
@@ -259,6 +241,52 @@ public function getTimeSlotsAndDays($id)
     } catch (Exception $e) {
         error_log("Error fetching slots/days: " . $e->getMessage());
         return $data;
+    }
+}
+
+public function updateFullActivity($id, $name, $description, $eventType, $startDate, $price, $location, $noOfSlots, $days, $times) {
+    // Start a transaction to ensure data integrity
+    $this->conn->begin_transaction();
+
+    try {
+        // 1. Update the main Activity table
+        $stmt = $this->conn->prepare("UPDATE activity SET name = ?, description = ?, event_type = ?, starting_date = ?, price = ?, location = ?, no_of_slots = ? WHERE activity_id = ?");
+        $stmt->bind_param("ssisdsis", $name, $description, $eventType, $startDate, $price, $location, $noOfSlots, $id);
+        $stmt->execute();
+
+        // 2. Clear old Recurring Days and Time Slots
+        $this->conn->query("DELETE FROM activity_days WHERE activity_id = '$id'");
+        $this->conn->query("DELETE FROM activity_slots WHERE activity_id = '$id'");
+
+        // 3. Only insert new days/slots if it is a recurring event (event_type = 0)
+        if ($eventType == 0) {
+            // Insert Days
+            if (!empty($days)) {
+                $dayStmt = $this->conn->prepare("INSERT INTO activity_days (activity_id, day_id) VALUES (?, ?)");
+                foreach ($days as $dayId) {
+                    $dayStmt->bind_param("si", $id, $dayId);
+                    $dayStmt->execute();
+                }
+            }
+
+            // Insert Time Slots
+            if (!empty($times)) {
+                $timeStmt = $this->conn->prepare("INSERT INTO activity_slots (activity_id, time_slots) VALUES (?, ?)");
+                foreach ($times as $slot) {
+                    $timeStmt->bind_param("ss", $id, $slot);
+                    $timeStmt->execute();
+                }
+            }
+        }
+
+        // Commit transaction
+        $this->conn->commit();
+        return true;
+
+    } catch (Exception $e) {
+        // Rollback if anything fails
+        $this->conn->rollback();
+        return false;
     }
 }
 }

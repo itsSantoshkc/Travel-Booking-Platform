@@ -27,7 +27,7 @@ class Booking
         $this->conn->begin_transaction();
 
         try {
-            // Note: Using 'time' to match your SQL schema column name
+            
             $sql = "INSERT INTO booking (booking_id, user_id, activity_id, no_of_slots, time, booked_for) 
                     VALUES (?, ?, ?, ?, ?, ?)";
             
@@ -77,7 +77,7 @@ class Booking
      */
  public function getBookingsByUserId($userId)
 {
-    // 1. Double check your column names (e.g., is it activity_id or id?)
+    
     $sql = "SELECT 
                 b.booking_id, 
                 b.no_of_slots, 
@@ -98,33 +98,43 @@ class Booking
         return [];
     }
 
-    // 2. Use "i" if your user_id is a number in the DB, "s" if it's a string/UUID
+    
     $type = is_numeric($userId) ? "i" : "s";
     $stmt->bind_param($type, $userId);
     
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // 3. Return the full associative array
+    
     return $result->fetch_all(MYSQLI_ASSOC);
 }
 
     /**
      * Get details of a single booking
      */
-    public function getBookingDetails($bookingId,$date)
+    public function getBookingDetails($bookingId)
     {
         $sql = "SELECT * FROM booking WHERE booking_id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("s", $bookingId);
         $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+        /**
+     * Get details of a single booking
+     */
+    public function getAllBooking()
+    {
+        $sql = "SELECT b.*, a.name, u.firstName FROM booking b INNER JOIN activity a ON b.activity_id = a.activity_id INNER JOIN user u ON b.user_id = u.userID";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
     public function getSlotsOccupied($activityId, $date, $time)
 {
-    // We use SUM() to count the total number of persons/slots booked
-    // COALESCE(..., 0) ensures that if there are 0 bookings, we get 0 instead of NULL
+
     $sql = "SELECT COALESCE(SUM(no_of_slots), 0) as total_occupied 
             FROM booking 
             WHERE activity_id = ? 
@@ -142,7 +152,7 @@ class Booking
 
 public function getSlotsPerTimeByDate($activityId, $date)
 {
-    // We group by 'time' to see the sum for every individual slot on that day
+    
     $sql = "SELECT time, SUM(no_of_slots) as total_booked 
             FROM booking 
             WHERE activity_id = ? 
@@ -156,7 +166,7 @@ public function getSlotsPerTimeByDate($activityId, $date)
 
     $occupancy = [];
     while ($row = $result->fetch_assoc()) {
-        // Example: $occupancy['10:00 AM'] = 5
+        
         $occupancy[$row['time']] = (int)$row['total_booked'];
     }
 

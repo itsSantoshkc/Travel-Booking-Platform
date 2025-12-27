@@ -74,12 +74,33 @@
           <span class="logo-text">Activity Booking</span>
       </div>
       <hr>
-      <ul class="nav-links">
-          <li><a href="dashboard.html">Dashboard</a></li>
-          <li><a href="managebookings.html">Manage Bookings</a></li>
-          <li><a href="manageactivity.html">Manage Activity</a></li>
-          <li class="active"><a href="newactivity.html">New Activity</a></li>
-          <li><a href="manageadminprofile.html">Manage Profile</a></li>
-      </ul>
-      <button id="logoutBtn" class="logout-btn">Log Out</button>
+      
+    <?php
+$currentPath = $_SERVER['REQUEST_URI'];
+$slug = basename($currentPath);
+
+    ?>
+        <ul class="nav-links">
+        <li class="<?= ($slug == 'dashboard.php') ? 'active' : '' ?>">
+            <a href="dashboard.php">Dashboard</a>
+        </li>
+
+        <li class="<?= ($slug == 'managebookings.php') ? 'active' : '' ?>">
+            <a href="managebookings.php">Manage Bookings</a>
+        </li>
+
+        <li class="<?= ($slug == 'manageactivity.php') ? 'active' : '' ?>">
+            <a href="manageactivity.php">Manage Activity</a>
+        </li>
+
+        <li class="<?= ($slug == 'newactivity.php') ? 'active' : '' ?>">
+            <a href="newactivity.php">New Activity</a>
+        </li>
+
+        <li class="<?= ($slug == 'manageadminprofile.php') ? 'active' : '' ?>">
+            <a href="manageadminprofile.php">Manage Profile</a>
+        </li>
+    </ul>
+    <button id="logoutBtn" class="logout-btn">Log Out</button>
   </nav>
+

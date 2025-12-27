@@ -1,0 +1,33 @@
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Container turns into a flexbox */
+        .container {
+            display: flex;
+            min-height: 100vh; /* Full viewport height */
+        }
+
+        /* Sidebar: 1/4 of the width (25%) */
+        .sidebar {
+            flex: 1; 
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+        }
+
+        /* Main Content: 3/4 of the width (75%) */
+        .main-content {
+            flex: 3;
+            background-color: #ecf0f1;
+            padding: 20px;
+        }
+
+        /* Responsive: Stack them on small screens */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }

@@ -1,5 +1,5 @@
 <?php
-include("conn.php");
+include(__DIR__ . '/../conn.php');
 function isLoggedIn()
 {
     if (isset($_SESSION["userID"]) && !empty($_SESSION["userID"])) {
