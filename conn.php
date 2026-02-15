@@ -5,9 +5,10 @@ if (session_status() === PHP_SESSION_NONE) {
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "trippie";
+$dbname = "travelbook";
 
-$baseUrl = "http://" . $_SERVER['HTTP_HOST'] . "/Activity Booking Platform/";
+
+define('BASE_URL', "http://" . $_SERVER['HTTP_HOST'] . "/Travel-Booking-Platform/");
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);

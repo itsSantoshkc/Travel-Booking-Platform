@@ -21,13 +21,13 @@ function newReview($reviewData)
     $this->conn->begin_transaction();
 
     try {
-        $sql = "INSERT INTO reviews ( userId ,activityID ,rating ,review) 
+        $sql = "INSERT INTO reviews ( userId ,package_id ,rating ,review) 
                 VALUES (?, ?, ?, ?)";
         
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("ssss", 
             $reviewData['userID'],
-            $reviewData['activityID'],
+            $reviewData['package_id'],
             $reviewData['rating'],
             $reviewData['review'],
         );
@@ -49,13 +49,13 @@ function newReview($reviewData)
     }
 }
 
-public function getReviewByActivityId($id)
+public function getReviewByPackageID($id)
     {
         // We join with the users table to get the name of the person who wrote the review
         $sql = "SELECT r.*, u.firstName 
                 FROM reviews r 
-                JOIN user u ON r.userId = u.userID 
-                WHERE r.activityID = ? 
+                JOIN user u ON r.user_Id = u.userID 
+                WHERE r.package_id = ? 
                 ORDER BY r.createdAt DESC";
 
         $stmt = $this->conn->prepare($sql);

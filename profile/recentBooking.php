@@ -2,10 +2,10 @@
     <link rel="stylesheet" href="./css/recentbook.css">
 </head>
 <?php
-include("header.php");
-include("conn.php");
-include("model/Booking.php");
-include("./components/Navbar.php");
+include("../header.php");
+include("../conn.php");
+include("../model/Booking.php");
+include("../components/Navbar.php");
 ?>
 
   <!-- MAIN CONTENT -->
@@ -22,8 +22,8 @@ include("./components/Navbar.php");
       <div class="table-header-row" role="presentation">
         <div class="header-cell sn">S.N.</div>
         <div class="header-cell activity">Name</div>
-        <div class="header-cell date">Date</div>
-        <div class="header-cell time">Time</div>
+        <div class="header-cell date">Booked On</div>
+        <div class="header-cell time">Travel Date</div>
         <div class="header-cell slots">No of Slots</div>
       </div>
  <?php
@@ -37,9 +37,9 @@ foreach ($bookings as $b) {
     $count++;
     echo "<div class='body-row'>
             <div class='body-cell sn'>{$count}</div>
-            <div class='body-cell activity'>{$b['activity_name']}</div>
-            <div class='body-cell date'>{$b['booked_for']}</div>
-            <div class='body-cell time'>{$b['time']}</div>
+            <div class='body-cell activity'>{$b['package_name']}</div>
+            <div class='body-cell time'>{$b['booked_at']}</div>
+            <div class='body-cell date'>{$b['starting_date']}</div>
             <div class='body-cell slots'>{$b['no_of_slots']}</div>
         </div>";
     

@@ -1,7 +1,6 @@
 
 
-
-function setupBookingHandlers(activityData) {
+function setupBookingHandlers(travelData) {
     document.querySelectorAll(".book-now-btn").forEach((btn) => {
         btn.onclick = (e) => {
             const row = e.target.closest(".slot");
@@ -28,7 +27,7 @@ function setupBookingHandlers(activityData) {
             `;
             
             // We use the activity's main slot count for validation
-            const maxSlots = activityData.no_of_slots || 10; 
+            const maxSlots = travelData.no_of_slots || 10; 
             document.getElementById("slotsRemainingText").textContent = `* ${maxSlots} Slots Available`;
 
             // 5. Setup the Final Confirmation Click
@@ -43,7 +42,7 @@ function setupBookingHandlers(activityData) {
 
                 // Final Alert with Date AND Time
                 alert(`✅ Booking Request Sent!\n` +
-                      `Activity: ${activityData.name}\n` +
+                      `Activity: ${travelData.name}\n` +
                       `Date: ${selectedDate}\n` +
                       `Time: ${selectedTime}\n` +
                       `Seats: ${count}`);
@@ -95,17 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 5. Conditional Visibility Logic
-    // This shows the Time/Persons/Button only after a date is selected
-    if (datePicker && bookingDetails) {
-        datePicker.addEventListener('change', () => {
-            if (datePicker.value !== "") {
-                // Show the hidden section with a simple fade-in effect if desired
-                bookingDetails.classList.remove("hidden");
-                bookingDetails.style.display = "block"; 
-            }
-        });
-    }
  
 
     // 6. Helper function to close and reset
@@ -117,32 +105,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (bookingForm) {
             bookingForm.reset();
         }
-        if (bookingDetails) {
-            bookingDetails.classList.add("hidden");
-            bookingDetails.style.display = "none";
-        }
+     
     }
 });
 
-   const timeSlot = document.querySelector(".time-slot");
-   const noOfSlot = document.querySelector(".no-of-slots");
-   const datePicker = document.querySelector("#datePicker");
-    let currentSelectedDate = '';
-    let bookedSlot = totalSlots - 0;
-
-
-   datePicker.addEventListener('change',() => {
-        currentSelectedDate = datePicker.value;
-   })
-        timeSlot.addEventListener('change',() => {
-            bookedSlot = totalSlots -  BOOKING_MAP[currentSelectedDate][timeSlot.value];
-            noOfSlot.innerHTML = "";
-            for(i = 1;i <= bookedSlot;i++){
-                noOfSlot.innerHTML += `<option value="${i}">${i} ${i === 1?'Person' : 'People'}</option>`;
-            }
-            console.log(bookedSlot);
-            
-        })
 
 
 

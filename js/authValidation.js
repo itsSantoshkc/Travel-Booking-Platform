@@ -21,8 +21,7 @@ async function validateSignUpData(event) {
   }
 
   const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-  const passwordRegex =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()[\]{}<>~`_+=|\\:;'",./-]).{9,}$/;
+  // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()[\]{}<>~`_+=|\\:;'",./-]).{9,}$/;
   const phoneRegex = /^\d{10}$/;
   if (!emailRegex.test(email.value)) {
     return showError("Invalid Email Address");
@@ -32,12 +31,12 @@ async function validateSignUpData(event) {
     return showError("Phone Number should be 10 digits");
   }
 
-  if (!passwordRegex.test(password.value)) {
-    password.style.border = "red solid";
-    return showError(
-      "Password must contain 1 Uppercae,1 Lower case alphabet,1 Number and ! Special Character"
-    );
-  }
+  // if (!passwordRegex.test(password.value)) {
+  //   password.style.border = "red solid";
+  //   return showError(
+  //     ""Password must be 9+ characters with uppercase, lowercase, digit, and special character""
+  //   );
+  // }
 
   if (password.value !== confirmpassword.value) {
     password.className = "error-input";
@@ -45,8 +44,7 @@ async function validateSignUpData(event) {
 
     return showError("Password and Confirm password do not match");
   }
-  const firstName = fullName.value.split(" ")[0];
-  const lastName = fullName.value.split(" ")[1];
+  const [firstName, lastName] = fullName.value.split(" ");
   
 
   const formData = `firstName=${encodeURIComponent(
@@ -143,5 +141,5 @@ function resetErrorStyle(event) {
 function showError(message) {
   const error = document.querySelector(".error-container");
   error.style.display = "flex";
-  error.children[0].textContent = "Error! " + message;
+  error.children[0].textContent = "Error! : " + message;
 }

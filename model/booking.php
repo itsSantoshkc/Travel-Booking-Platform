@@ -81,15 +81,15 @@ class Booking
     $sql = "SELECT 
                 b.booking_id, 
                 b.no_of_slots, 
-                b.time, 
-                b.booked_for, 
-                a.name as activity_name, 
-                a.location, 
-                a.price
+                b.booked_at,
+                t.starting_date
+                t.name as package_name, 
+                t.location, 
+                t.price
             FROM booking b
-            INNER JOIN activity a ON b.activity_id = a.activity_id
+            INNER JOIN travelpackages t ON b.package_id = t.package_id
             WHERE b.user_id = ?
-            ORDER BY b.booked_for ASC, b.time ASC";
+            ORDER BY b.booked_at ASC";
 
     $stmt = $this->conn->prepare($sql);
     

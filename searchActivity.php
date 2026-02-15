@@ -1,15 +1,15 @@
 <?php
 include("header.php");
 include("conn.php");
-include("model/Activity.php");
+include("model/travel-package.php");
 
 // 1. Capture the GET data
 $location = $_GET['location'] ?? '';
 $date = $_GET['date'] ?? '';
 $people = (int)($_GET['noOfPeople'] ?? 0);
 
-$activityObj = new Activity($conn);
-$results = $activityObj->searchActivities($location, $date, $people);
+$travelObj = new Travel($conn);
+$results = $travelObj->searchActivities($location, $date, $people);
 ?>
 
 <body class="bg-gray-50">

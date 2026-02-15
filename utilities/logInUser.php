@@ -2,7 +2,7 @@
 header("Content-Type: application/json");
 session_start();
 include '../model/User.php';
-include '../conn.php';
+require_once '../conn.php';
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     http_response_code(405);

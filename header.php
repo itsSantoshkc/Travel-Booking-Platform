@@ -9,5 +9,5 @@
 
     <script src="https://kit.fontawesome.com/e07ff84049.js" crossorigin="anonymous"></script>
 
-    <title>Trippie</title>
+    <title>Travel Booking Platform</title>
 </head>

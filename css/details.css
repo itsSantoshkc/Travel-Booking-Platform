@@ -224,6 +224,25 @@ body {
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.25);
 }
 
+.check-btn-disabled {
+    width: 140px;
+    height: 50px;
+    background:#ff8795;
+    cursor: default;
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.25);
+}
+
 .check-btn:hover {
     background: #A41728;
     transform: translateY(-2px);

@@ -1,7 +1,7 @@
 <?php
-include("./conn.php");
-include("./header.php");
-include("./components/Navbar.php");
+include('../conn.php');
+include('../header.php');
+include("../components/Navbar.php");
 
 $userId = $_SESSION['userID']; 
 $sql = "SELECT * FROM user WHERE userID = ?";

@@ -49,15 +49,15 @@ if (!preg_match('/^\d{10}$/', $phone)) {
     exit;
 }
 
-$passwordRegex = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()[\]{}<>~`_+=|\\\\:;\'",.\/?-]).{9,}$/';
-if (!preg_match($passwordRegex, $password)) {
-    http_response_code(400);
-    echo json_encode([
-        "success" => false,
-        "message" => "Password must be 9+ characters with uppercase, lowercase, digit, and special character"
-    ]);
-    exit;
-}
+// $passwordRegex = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()[\]{}<>~`_+=|\\\\:;\'",.\/?-]).{9,}$/';
+// if (!preg_match($passwordRegex, $password)) {
+//     http_response_code(400);
+//     echo json_encode([
+//         "success" => false,
+//         "message" => "Password must be 9+ characters with uppercase, lowercase, digit, and special character"
+//     ]);
+//     exit;
+// }
 
 
 $hash = password_hash($password, PASSWORD_BCRYPT);
@@ -72,7 +72,7 @@ $hash = password_hash($password, PASSWORD_BCRYPT);
 
 
 $user = new User($conn);
-$newUser =  array("firstName" => $firstName, "lastName" => $$lastName, "email" => $email, "password" =>  $hash, "dateOfBirth" => $dob, "phone" => $phone, "role" => "user");
+$newUser =  array("firstName" => $firstName, "lastName" => $lastName, "email" => $email, "password" =>  $hash, "dateOfBirth" => $dob, "phone" => $phone, "role" => "user");
 $userData = $user->newUser($newUser);
 
 

@@ -1,7 +1,7 @@
 <?php
 include("header.php");
-include("conn.php");
-include("model/Activity.php");
+require_once("conn.php");
+include("model/travel_package.php");
 ?>
 
 <body>
@@ -25,7 +25,7 @@ include("model/Activity.php");
         <select name="noOfPeople" id="noOfPeople" class="w-1/5 px-2 py-1 placeholder:px-2">
           <option value='0'>No of People</option>
           <?php
-          for ($i = 1; $i < 25; $i++) {
+          for ($i = 1; $i < 12; $i++) {
             echo "<option value='$i'>$i</option>";
           }
           ?>
@@ -52,15 +52,16 @@ include("model/Activity.php");
       id="content">
       <?php
     try {
-  $activityObj = new Activity($conn);
-  $activityData = $activityObj->getAllActivity();
+  $travelPackageObj = new Travel($conn);
+  $activityData = $travelPackageObj->getAllAvailableTravelPackages();
 
   foreach ($activityData as $data) {
     if (!empty($data['images'])) {
-        $imagePath = str_replace('../', '', $baseUrl . $data['images'][0]);
+        // $imagePath = str_replace('../', '', $baseUrl . $data['images'][0]);
+                $imagePath = str_replace('../', '',  $data['images'][0]);
     }
     echo "
-    <a class='mb-8' href='activity.php?activity={$data['activity_id']}'>
+    <a class='mb-8' href='travelPackage.php?activity={$data['package_id']}'>
     
       <div class='max-h-[90%] w-full relative'>
         <img
