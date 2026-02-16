@@ -25,13 +25,14 @@ CREATE TABLE User_Verification (
 CREATE TABLE travelPackages (
     package_id VARCHAR(100) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    arrivalTime DATE,
+    arrivalTime TIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     duration INT,
     starting_date DATE,
     location VARCHAR(255),
     price DECIMAL(10, 2),
     description TEXT
+    totalSlots INT
 );
 
 CREATE TABLE package_images (
@@ -67,7 +68,12 @@ CREATE TABLE Reviews (
 );
     
 
-
+-- ALTER TABLE `package_images`
+--   DROP PRIMARY KEY,
+--    ADD PRIMARY KEY(
+--      `image_id`,
+--      `package_id`
+--    );
 
 
 -- Mock Data

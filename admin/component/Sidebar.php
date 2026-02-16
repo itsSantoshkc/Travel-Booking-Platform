@@ -71,36 +71,35 @@
   <nav class="sidebar">
       <div class="logo">
           <span class="plane">✈️</span>
-          <span class="logo-text">Activity Booking</span>
+          <span class="logo-text">Travel Booking</span>
       </div>
       <hr>
-      
-    <?php
-$currentPath = $_SERVER['REQUEST_URI'];
-$slug = basename($currentPath);
 
-    ?>
-        <ul class="nav-links">
-        <li class="<?= ($slug == 'dashboard.php') ? 'active' : '' ?>">
-            <a href="dashboard.php">Dashboard</a>
-        </li>
+      <?php
+        $currentPath = $_SERVER['REQUEST_URI'];
+        $slug = basename($currentPath);
 
-        <li class="<?= ($slug == 'managebookings.php') ? 'active' : '' ?>">
-            <a href="managebookings.php">Manage Bookings</a>
-        </li>
+        ?>
+      <ul class="nav-links">
+          <li class="<?= ($slug == 'dashboard.php') ? 'active' : '' ?>">
+              <a href="dashboard.php">Dashboard</a>
+          </li>
 
-        <li class="<?= ($slug == 'manageactivity.php') ? 'active' : '' ?>">
-            <a href="manageactivity.php">Manage Activity</a>
-        </li>
+          <li class="<?= ($slug == 'managebookings.php') ? 'active' : '' ?>">
+              <a href="managebookings.php">Manage Bookings</a>
+          </li>
 
-        <li class="<?= ($slug == 'newactivity.php') ? 'active' : '' ?>">
-            <a href="newactivity.php">New Activity</a>
-        </li>
+          <li class="<?= ($slug == 'managePackage.php') ? 'active' : '' ?>">
+              <a href="managePackage.php">Manage Travel</a>
+          </li>
 
-        <li class="<?= ($slug == 'manageProfile.php') ? 'active' : '' ?>">
-            <a href="manageProfile.php">Manage Profile</a>
-        </li>
-    </ul>
-    <button id="logoutBtn" class="logout-btn">Log Out</button>
+          <li class="<?= ($slug == 'newPackage.php') ? 'active' : '' ?>">
+              <a href="newPackage.php">New Package</a>
+          </li>
+
+          <li class="<?= ($slug == 'manageProfile.php') ? 'active' : '' ?>">
+              <a href="manageProfile.php">Manage Profile</a>
+          </li>
+      </ul>
+      <button id="logoutBtn" class="logout-btn">Log Out</button>
   </nav>
-

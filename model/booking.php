@@ -28,23 +28,20 @@ class Booking
 
         try {
             
-            $sql = "INSERT INTO booking (booking_id, user_id, activity_id, no_of_slots, time, booked_for) 
-                    VALUES (?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO booking (booking_id, user_id, package_id, no_of_slots) 
+                    VALUES (?, ?, ?, ?)";
             
             $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param("sssiss", 
+            $stmt->bind_param("sssi", 
                 $uuid, 
-                $bookingData['userId'], 
-                $bookingData['activityId'], 
-                $bookingData['slots'], 
-                $bookingData['time'], 
-                $bookingData['bookedFor']
+                $bookingData['user_id'], 
+                $bookingData['package_id'], 
+                $bookingData['slots']
             );
 
             if (!$stmt->execute()) {
-                throw new Exception("Failed to book an activity: " . $stmt->error);
+                throw new Exception("Failed to book an package: " . $stmt->error);
             }
-
             $this->conn->commit();
             return ["success" => true, "bookingId" => $uuid];
 
@@ -58,16 +55,16 @@ class Booking
     /**
      * For Admin: See everyone who booked a specific activity
      */
-    public function getBookingsByActivityId($activityId)
+    public function getBookingsByPackageId($package_id)
     {
         $sql = "SELECT b.*, u.username, u.email 
                 FROM booking b 
                 JOIN users u ON b.user_id = u.user_id 
-                WHERE b.activity_id = ? 
+                WHERE b.package_id = ? 
                 ORDER BY b.booked_at DESC";
         
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("s", $activityId);
+        $stmt->bind_param("s", $package_id);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
@@ -78,14 +75,7 @@ class Booking
  public function getBookingsByUserId($userId)
 {
     
-    $sql = "SELECT 
-                b.booking_id, 
-                b.no_of_slots, 
-                b.booked_at,
-                t.starting_date
-                t.name as package_name, 
-                t.location, 
-                t.price
+    $sql = "SELECT b.booking_id, b.no_of_slots, b.booked_at,t.starting_date,t.name as package_name, t.location, t.price
             FROM booking b
             INNER JOIN travelpackages t ON b.package_id = t.package_id
             WHERE b.user_id = ?
@@ -126,23 +116,21 @@ class Booking
      */
     public function getAllBooking()
     {
-        $sql = "SELECT b.*, a.name, u.firstName FROM booking b INNER JOIN activity a ON b.activity_id = a.activity_id INNER JOIN user u ON b.user_id = u.userID";
+        $sql = "SELECT b.*, a.name, u.firstName FROM booking b INNER JOIN travelPackages a ON b.package_id = a.package_id INNER JOIN user u ON b.user_id = u.userID";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function getSlotsOccupied($activityId, $date, $time)
+    public function getSlotsOccupied($package_id)
 {
 
-    $sql = "SELECT COALESCE(SUM(no_of_slots), 0) as total_occupied 
+    $sql = "SELECT COALESCE(SUM(no_of_slots), 0) as total_occupied
             FROM booking 
-            WHERE activity_id = ? 
-            AND booked_for = ? 
-            AND time = ?";
+            WHERE package_id = ?" ;
 
     $stmt = $this->conn->prepare($sql);
-    $stmt->bind_param("sss", $activityId, $date, $time);
+    $stmt->bind_param("s", $package_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
@@ -150,17 +138,17 @@ class Booking
     return (int)$row['total_occupied'];
 }
 
-public function getSlotsPerTimeByDate($activityId, $date)
+public function getSlotsPerTimeByDate($package_id, $date)
 {
     
     $sql = "SELECT time, SUM(no_of_slots) as total_booked 
             FROM booking 
-            WHERE activity_id = ? 
+            WHERE package_id = ? 
             AND booked_for = ? 
             GROUP BY time";
 
     $stmt = $this->conn->prepare($sql);
-    $stmt->bind_param("ss", $activityId, $date);
+    $stmt->bind_param("ss", $package_id, $date);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -173,14 +161,14 @@ public function getSlotsPerTimeByDate($activityId, $date)
     return $occupancy;
 }
 
-public function getBookingMap($activityId, $datesArray, $timesArray) {
+public function getBookingMap($package_id, $datesArray, $timesArray) {
     // 1. Setup Placeholders for the IN clauses
     $datePlaceholders = implode(',', array_fill(0, count($datesArray), '?'));
     $timePlaceholders = implode(',', array_fill(0, count($timesArray), '?'));
 
     $sql = "SELECT booked_for, time, SUM(no_of_slots) as total_booked 
             FROM booking 
-            WHERE activity_id = ? 
+            WHERE package_id = ? 
             AND booked_for IN ($datePlaceholders) 
             AND time IN ($timePlaceholders)
             GROUP BY booked_for, time";
@@ -189,7 +177,7 @@ public function getBookingMap($activityId, $datesArray, $timesArray) {
 
     // 2. Bind parameters dynamically
     $types = "s" . str_repeat("s", count($datesArray)) . str_repeat("s", count($timesArray));
-    $params = array_merge([$activityId], $datesArray, $timesArray);
+    $params = array_merge([$package_id], $datesArray, $timesArray);
     $stmt->bind_param($types, ...$params);
     
     $stmt->execute();

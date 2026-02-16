@@ -15,20 +15,13 @@
   --border-radius-sm: 6px;
   --input-padding: 12px 16px;
 
-  /* Typography */
-  --font-main: "Inter", sans-serif;
 }
 
 * {
   margin: 0;
   box-sizing: border-box;
-  font-family: var(--font-main);
 }
 
-body {
-  background: var(--color-bg-body);
-  display: flex;
-}
 
 /* MAIN */
 .main {
@@ -110,7 +103,6 @@ body {
   border: none;
   box-shadow: 0px 0px 4px var(--color-shadow);
   font-size: 14px;
-  font-family: var(--font-main);
 }
 
 .field input {

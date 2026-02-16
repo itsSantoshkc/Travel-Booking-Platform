@@ -1,5 +1,5 @@
 <?php
-include('../conn.php');
+require_once('../conn.php');
 
 class User
 {
@@ -27,7 +27,33 @@ class User
         return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
-    function getUserWithId($userId) {}
+   function getUserWithId($userId)
+{
+    try {
+        // We exclude 'password' for security. 
+        // Always list columns explicitly instead of using *
+        $sql = "SELECT userID, firstName, lastName, email, dateOfBirth, phone, role FROM user WHERE userID = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s', $userId);
+
+        if ($stmt->execute()) {
+            $result = $stmt->get_result();
+            
+            if ($result->num_rows === 0) {
+                return ["success" => false, "error" => "User not found"];
+            }
+
+            $user = $result->fetch_assoc();
+            return ["success" => true, "data" => $user];
+        }
+        
+        return ["success" => false, "error" => "Query execution failed"];
+
+    } catch (Throwable $th) {
+        error_log("Error in getUserWithId: " . $th->getMessage());
+        return ["success" => false, "error" => "An internal error occurred"];
+    }
+}
 
     function searchUserWithEmail($email)
     {
@@ -50,7 +76,7 @@ class User
                 // }
 
             }
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             echo $th->getMessage();
         }
     }

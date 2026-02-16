@@ -61,7 +61,7 @@ include("model/travel_package.php");
                 $imagePath = str_replace('../', '',  $data['images'][0]);
     }
     echo "
-    <a class='mb-8' href='travelPackage.php?activity={$data['package_id']}'>
+    <a class='mb-8' href='travelPackage.php?package={$data['package_id']}'>
     
       <div class='max-h-[90%] w-full relative'>
         <img

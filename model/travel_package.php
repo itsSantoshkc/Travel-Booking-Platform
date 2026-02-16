@@ -19,78 +19,77 @@ class Travel
         return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
-    function newActivity($activityData)
+    function newPackage($packageData)
     {
-        if (empty($activityData)) {
+        if (empty($packageData)) {
             return ["success" => false, "error" => "No data provided"];
         }
 
         $uuid = $this->uuidv4();
-        $eventType = $activityData['eventType'];
 
-        $dayMap = ["Sun" => 1, "Mon" => 2, "Tue" => 3, "Wed" => 4, "Thu" => 5, "Fri" => 6, "Sat" => 7];
 
         $this->conn->begin_transaction();
 
         try {
-            $sql = "INSERT INTO activity (package_id, name, description, no_of_slots, price, event_type, location, starting_date) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
+            $sql = "INSERT INTO travelPackages(package_id,name,arrivalTime,duration,starting_date,location,price,description,totalSlots)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $this->conn->prepare($sql);
+            $packageId   = $uuid;
+            $name        = $packageData['name'];
+            $arrivalTime = $packageData['arrival_time'];
+            $duration    = (int)$packageData['duration'];
+            $startDate   = $packageData['starting_date'];
+            $location    = $packageData['location'];
+            $price       = (float)$packageData['price'];
+            $description = $packageData['description'];
+            $slots       = (int)$packageData['slots'];
+
             $stmt->bind_param(
-                "sssidsss",
-                $uuid,
-                $activityData['name'],
-                $activityData['description'],
-                $activityData['slots'],
-                $activityData['price'],
-                $eventType,
-                $activityData['location'],
-                $activityData['mainDate']
+                "sssissdsi",
+                $packageId,
+                $name,
+                $arrivalTime,
+                $duration,
+                $startDate,
+                $location,
+                $price,
+                $description,
+                $slots,
             );
 
+
+
+
+
             if (!$stmt->execute()) {
-                throw new Exception("Failed to create main activity: " . $stmt->error);
+                throw new Exception("Failed to create Package: " . $stmt->error);
             }
 
-            if (!empty($activityData['slots_list'])) {
-                $slotStmt = $this->conn->prepare("INSERT INTO activity_slots (time_slots, package_id) VALUES (?, ?)");
-                foreach ($activityData['slots_list'] as $slot) {
-                    $slotStmt->bind_param("ss", $slot, $uuid);
-                    $slotStmt->execute();
-                }
-            }
 
-            if (!empty($activityData['images'])) {
-                $imgStmt = $this->conn->prepare("INSERT INTO activity_images (image_path, package_id) VALUES (?, ?)");
-                foreach ($activityData['images'] as $image) {
-                    $imgStmt->bind_param("ss", $image, $uuid);
+            if (!empty($packageData['images'])) {
+
+                $imgStmt = $this->conn->prepare("INSERT INTO package_images (image_id,image_path, package_id) VALUES (?, ?,?)");
+                foreach ($packageData['images'] as  $index => $image) {
+                    $imgStmt->bind_param("iss", $index, $image, $uuid);
                     $imgStmt->execute();
                 }
             }
 
-            if ($eventType === "recurring" && !empty($activityData['days'])) {
-                $daysStmt = $this->conn->prepare("INSERT INTO activity_days (day_id, package_id) VALUES (?, ?)");
-                foreach ($activityData['days'] as $dayName) {
-                    $daysStmt->bind_param("is", $dayName, $uuid);
-                    $daysStmt->execute();
-                }
-            }
-
             $this->conn->commit();
-            return ["success" => true, "activityID" => $uuid];
+            return ["success" => true, "package_id" => $uuid];
         } catch (Exception $e) {
 
             $this->conn->rollback();
-            error_log("Activity Creation Error: " . $e->getMessage()); // Log it for the dev
+
+            echo ($e->getMessage());
+            error_log("Package Creation Error: " . $e->getMessage()); // Log it for the dev
             return ["success" => false, "error" => $e->getMessage()];
         }
     }
 
     public function getAllAvailableTravelPackages()
     {
-        // We use LEFT JOIN so activities show up even if they don't have images yet
-        // DISTINCT inside GROUP_CONCAT prevents path duplication
+
         $sql = "SELECT  p.*,  GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') as image_list FROM travelPackages p
                 LEFT JOIN package_images i ON p.package_id = i.package_id
                 GROUP BY p.package_id ORDER BY p.created_at DESC;";
@@ -100,10 +99,9 @@ class Travel
 
         if ($result && $result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                // Convert the piped string of paths into a clean PHP array
+
                 $row['images'] = $row['image_list'] ? explode('|', $row['image_list']) : [];
 
-                // Remove the raw string to keep the array clean
                 unset($row['image_list']);
 
                 $activities[] = $row;
@@ -113,12 +111,12 @@ class Travel
         return $activities;
     }
 
-    public function searchActivities($location, $date, $people)
+    public function searchPackage($location, $date, $people)
     {
         // Start with a base query
-        $sql = "SELECT a.*, GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') as image_list
-            FROM activity a
-            LEFT JOIN activity_images i ON a.package_id = i.package_id
+        $sql = "SELECT t.*, GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') as image_list
+            FROM travelPackages t
+            LEFT JOIN package_images i ON t.package_id = i.package_id
             WHERE 1=1"; // 'WHERE 1=1' allows us to easily append AND conditions
 
         $params = [];
@@ -126,24 +124,24 @@ class Travel
 
         // Dynamically add filters if they are provided
         if (!empty($location)) {
-            $sql .= " AND a.location LIKE ?";
+            $sql .= " AND t.location LIKE ?";
             $params[] = "%$location%";
             $types .= "s";
         }
 
         if (!empty($date)) {
-            $sql .= " AND a.starting_date = ?";
+            $sql .= " AND t.starting_date = ?";
             $params[] = $date;
             $types .= "s";
         }
 
         if ($people > 0) {
-            $sql .= " AND a.no_of_slots >= ?";
+            $sql .= " AND t.totalSlots >= ?";
             $params[] = $people;
             $types .= "i";
         }
 
-        $sql .= " GROUP BY a.package_id ORDER BY a.created_at DESC";
+        $sql .= " GROUP BY t.package_id ORDER BY t.created_at DESC";
 
         $stmt = $this->conn->prepare($sql);
 
@@ -166,68 +164,44 @@ class Travel
     {
         // Fix: WHERE comes before GROUP BY. 
         // We fetch the piped strings for images, slots, and days in one go.
-        $sql = "SELECT a.*, 
-            GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') as image_list
-            FROM travelpackages a 
-            LEFT JOIN package_images i ON a.package_id = i.package_id 
-            WHERE a.package_id = ?
-            GROUP BY a.package_id";
+        $sql = "SELECT t.*, GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') as image_list,stats.booked_slots FROM travelpackages t
+                LEFT JOIN package_images i ON t.package_id = i.package_id 
+                LEFT JOIN (SELECT package_id, SUM(no_of_slots) as booked_slots FROM booking  GROUP BY package_id ) AS stats
+                ON t.package_id = stats.package_id WHERE t.package_id = ? GROUP BY t.package_id;";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("s", $id);
         $stmt->execute();
         $result = $stmt->get_result();
-        $activity = $result->fetch_assoc();
+        $package = $result->fetch_assoc();
 
-        if (!$activity) return null;
+        if (!$package)
+            return null;
 
-        $activity['images'] = $activity['image_list'] ? explode('|', $activity['image_list']) : [];
-        unset($activity['image_list']);
+        $package['images'] = $package['image_list'] ? explode('|', $package['image_list']) : [];
+        unset($package['image_list']);
 
-        return $activity;
+        return $package;
     }
 
 
-    public function updateFullActivity($id, $name, $description, $eventType, $startDate, $price, $location, $noOfSlots, $days, $times)
+    public function updateFullActivity($id, $name, $description, $duration,$location,$price,$slots_count,$starting_date,$arrivalTime)
     {
         // Start a transaction to ensure data integrity
         $this->conn->begin_transaction();
-
         try {
+            
             // 1. Update the main Activity table
-            $stmt = $this->conn->prepare("UPDATE activity SET name = ?, description = ?, event_type = ?, starting_date = ?, price = ?, location = ?, no_of_slots = ? WHERE package_id = ?");
-            $stmt->bind_param("ssisdsis", $name, $description, $eventType, $startDate, $price, $location, $noOfSlots, $id);
+            $stmt = $this->conn->prepare("UPDATE travelpackages SET name = ?, description = ?, duration = ?, starting_date = ?,arrivalTime = ?, price = ?, location = ?, totalSlots = ? WHERE package_id = ?");
+
+            $stmt->bind_param("ssissdsis", $name, $description, $duration, $starting_date,$arrivalTime, $price, $location, $slots_count, $id);
             $stmt->execute();
-
-            // 2. Clear old Recurring Days and Time Slots
-            $this->conn->query("DELETE FROM activity_days WHERE package_id = '$id'");
-            $this->conn->query("DELETE FROM activity_slots WHERE package_id = '$id'");
-
-            // 3. Only insert new days/slots if it is a recurring event (event_type = 0)
-            if ($eventType == 0) {
-                // Insert Days
-                if (!empty($days)) {
-                    $dayStmt = $this->conn->prepare("INSERT INTO activity_days (package_id, day_id) VALUES (?, ?)");
-                    foreach ($days as $dayId) {
-                        $dayStmt->bind_param("si", $id, $dayId);
-                        $dayStmt->execute();
-                    }
-                }
-
-                // Insert Time Slots
-                if (!empty($times)) {
-                    $timeStmt = $this->conn->prepare("INSERT INTO activity_slots (package_id, time_slots) VALUES (?, ?)");
-                    foreach ($times as $slot) {
-                        $timeStmt->bind_param("ss", $id, $slot);
-                        $timeStmt->execute();
-                    }
-                }
-            }
 
             // Commit transaction
             $this->conn->commit();
             return true;
         } catch (Exception $e) {
+            echo $e->getMessage();
             // Rollback if anything fails
             $this->conn->rollback();
             return false;

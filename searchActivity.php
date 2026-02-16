@@ -1,15 +1,14 @@
 <?php
 include("header.php");
 include("conn.php");
-include("model/travel-package.php");
+include("model/travel_package.php");
 
-// 1. Capture the GET data
 $location = $_GET['location'] ?? '';
 $date = $_GET['date'] ?? '';
 $people = (int)($_GET['noOfPeople'] ?? 0);
 
 $travelObj = new Travel($conn);
-$results = $travelObj->searchActivities($location, $date, $people);
+$results = $travelObj->searchPackage($location, $date, $people);
 ?>
 
 <body class="bg-gray-50">
@@ -31,8 +30,7 @@ $results = $travelObj->searchActivities($location, $date, $people);
       <?php else: ?>
         <?php foreach ($results as $data): ?>
           <?php 
-            // Reuse your clean path logic
-            $imagePath = !empty($data['images']) ? str_replace('../', '', $data['images'][0]) : 'uploads/placeholder.jpg';
+              $imagePath = !empty($data['images']) ? str_replace('../', '', $data['images'][0]) : 'uploads/placeholder.jpg';
           ?>
           
           <div class='w-full mb-8'>

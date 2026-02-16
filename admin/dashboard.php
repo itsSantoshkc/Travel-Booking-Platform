@@ -1,28 +1,16 @@
 <?php
-// dashboard.php - Admin Dashboard with PHP Backend
+include("../middleware/authMiddleware.php"); 
+require_once("../model/User.php");
 
-// Database configuration
-$db_config = [
-    'host' => 'localhost',
-    'username' => 'your_username',
-    'password' => 'your_password',
-    'database' => 'helicopter_tours'
-];
 
-// Uncomment to use actual database connection
-// $conn = new mysqli($db_config['host'], $db_config['username'], $db_config['password'], $db_config['database']);
-// if ($conn->connect_error) {
-//     die("Connection failed: " . $conn->connect_error);
-// }
 
-// Sample data (replace with database queries)
 $admin_profile = [
     'name' => 'Jesse James',
     'email' => 'jesse@gmail.com',
     'image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop'
 ];
 
-// Stats data
+
 $stats = [
     'total_bookings' => 1247,
     'revenue' => 89200,
@@ -33,6 +21,42 @@ $stats = [
 // Recent bookings
 $recent_bookings = [
     [
+        'id' => 1,
+        'customer_name' => 'Tyril R',
+        'customer_image' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
+        'tour' => 'Everest Helicopter ride',
+        'date' => '2025/12/25',
+        'time' => '10:00 AM',
+        'persons' => 4
+    ],
+    [
+        'id' => 2,
+        'customer_name' => 'Maya R',
+        'customer_image' => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
+        'tour' => 'Everest Helicopter ride',
+        'date' => '2025/12/25',
+        'time' => '2:00 PM',
+        'persons' => 4
+    ],
+    [
+        'id' => 3,
+        'customer_name' => 'Arjun S',
+        'customer_image' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop',
+        'tour' => 'Everest Helicopter ride',
+        'date' => '2025/12/25',
+        'time' => '4:00 PM',
+        'persons' => 4
+    ],
+    [
+        'id' => 4,
+        'customer_name' => 'Rihana K',
+        'customer_image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
+        'tour' => 'Everest Helicopter ride',
+        'date' => '2025/12/25',
+        'time' => '6:00 PM',
+        'persons' => 4
+    ],
+      [
         'id' => 1,
         'customer_name' => 'Tyril R',
         'customer_image' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
@@ -92,22 +116,31 @@ $recent_reviews = [
         'customer_image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
         'rating' => 4.5,
         'has_review' => true
+    ],
+    [
+        'id' => 1,
+        'customer_name' => 'Maya R',
+        'customer_image' => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
+        'rating' => 4.5,
+        'has_review' => false
+    ],
+    [
+        'id' => 2,
+        'customer_name' => 'James',
+        'customer_image' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop',
+        'rating' => 4.5,
+        'has_review' => true
+    ],
+    [
+        'id' => 3,
+        'customer_name' => 'Rihana',
+        'customer_image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
+        'rating' => 4.5,
+        'has_review' => true
     ]
 ];
 
-// Chart data (bookings per day for last 30 days)
-$chart_data = [
-    50, 80, 120, 90, 110, 140, 130, 160, 190, 170, 
-    200, 230, 210, 240, 280, 260, 290, 320, 300, 330,
-    360, 340, 370, 400, 380, 410, 390, 420, 400, 430
-];
 
-// Helper function to format currency
-function formatCurrency($amount) {
-    return '$' . number_format($amount / 1000, 1) . 'K';
-}
-
-// Helper function to render star rating
 function renderStars($rating) {
     $fullStars = floor($rating);
     $halfStar = ($rating - $fullStars) >= 0.5;
@@ -120,18 +153,26 @@ function renderStars($rating) {
     return trim($stars);
 }
 
+$userId = $_SESSION['userID']; 
+
+$userObj = new User($conn);
+$userData = $userObj->getUserWithId($userId)['data'];
+
+// public function getDashboardStats() {
+//     $sql = "SELECT 
+//                 (SELECT COUNT(*) FROM Booking) AS total_bookings,
+//                 (SELECT ROUND(AVG(rating), 1) FROM Reviews) AS avg_rating,
+//                 (SELECT COUNT(*) FROM User) AS total_users";
+    
+//     $result = $this->conn->query($sql);
+//     return $result->fetch_assoc();
+// }
 ?>
 
-<?php
-// ... [Keep all your existing PHP logic/data the same] ...
-?>
-<!DOCTYPE html>
-<html lang="en">
+
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Everest Helicopter Tours</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Admin Dashboard</title>
     <style>
         :root {
             --primary: #1a2332;
@@ -156,11 +197,9 @@ function renderStars($rating) {
 
         /* CONSTRAINT: 100vh height and centered layout */
         body {
-            font-family: 'Karla', sans-serif;
-            background: var(--bg-main);
             color: var(--text-primary);
             height: 100vh;
-            width: 100vw;
+            width: 95vw;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -186,35 +225,42 @@ function renderStars($rating) {
             padding: 1rem 2rem;
             background: var(--bg-card);
             border-radius: 20px;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-md);
             animation: fadeInDown 0.6s ease forwards;
         }
 
         .profile-section { display: flex; align-items: center; gap: 1rem; }
         .profile-image { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
-        .profile-info h1 { font-family: 'Playfair Display', serif; font-size: 1.2rem; }
+        .profile-info h1 {  font-size: 1.2rem; }
         .profile-info p { font-size: 0.8rem; color: var(--text-secondary); }
 
         /* Stats Grid - Fixed Height */
         .stats-grid {
             flex-shrink: 0;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 1rem;
         }
 
         .stat-card {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            background: var(--bg-card);
+            height: 300px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             padding: 1.2rem;
             border-radius: 16px;
-            color: white;
+            color: var(--primary);
             box-shadow: var(--shadow-md);
             animation: fadeInUp 0.6s ease forwards;
         }
 
-        .stat-label { font-size: 0.75rem; opacity: 0.8; }
-        .stat-value { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; }
-        .stat-change { font-size: 0.7rem; margin-top: 0.2rem; }
+        .stat-label { font-size: 1.75rem;
+        font-weight: bold;
+        }
+        .stat-value {  font-size: 1.8rem; font-weight: 700; }
 
         /* Bottom Grid - FLEX GROW to fill remaining space */
         .bottom-grid {
@@ -236,9 +282,9 @@ function renderStars($rating) {
         }
 
         .section-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.4rem;
+            font-size: 1.7rem;
             margin-bottom: 1rem;
+            font-weight: bold;
             flex-shrink: 0;
         }
 
@@ -268,13 +314,12 @@ function renderStars($rating) {
         }
 
         .booking-item:hover, .review-item:hover {
-            transform: scale(1.01);
-            border-color: var(--accent);
+            border-color: var(--primary);
         }
 
         .booking-avatar, .review-avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 12px; }
-        .booking-details h3, .review-info h4 { font-size: 0.9rem; font-weight: 500; }
-        .stars { color: var(--accent); font-size: 0.8rem; }
+        .booking-details h3, .review-info h4 { font-size: 1.5rem; font-weight: 500; }
+        .stars { color: var(--accent); font-size: 1rem; }
 
         /* Responsive Breakpoints */
         @media (max-width: 1100px) {
@@ -294,13 +339,14 @@ function renderStars($rating) {
     </style>
 </head>
 <body>
+    <?php include("header.php");?>
     <div class="container">
         <header class="header">
             <div class="profile-section">
                 <img src="<?= htmlspecialchars($admin_profile['image']); ?>" class="profile-image">
                 <div class="profile-info">
-                    <h1>Welcome, <?= htmlspecialchars($admin_profile['name']); ?></h1>
-                    <p><?= htmlspecialchars($admin_profile['email']); ?></p>
+                    <h1>Welcome, <?= htmlspecialchars($userData['firstName']. " " .$userData['lastName'] ); ?></h1>
+                    <p><?= htmlspecialchars($userData['email']); ?></p>
                 </div>
             </div>
         </header>
@@ -309,22 +355,15 @@ function renderStars($rating) {
             <div class="stat-card">
                 <div class="stat-label">Total Bookings</div>
                 <div class="stat-value"><?= number_format($stats['total_bookings']); ?></div>
-                <div class="stat-change" style="color:#10b981">↑ 12.5%</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Revenue</div>
-                <div class="stat-value"><?= formatCurrency($stats['revenue']); ?></div>
-                <div class="stat-change" style="color:#10b981">↑ 8.3%</div>
-            </div>
+          
             <div class="stat-card">
                 <div class="stat-label">Avg Rating</div>
-                <div class="stat-value"><?= $stats['avg_rating']; ?></div>
-                <div class="stars">★★★★★</div>
+                <div class="stat-value"><?= $stats['avg_rating']; ?> ★</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Active Tours</div>
                 <div class="stat-value"><?= $stats['active_tours']; ?></div>
-                <div class="stat-change">Live now</div>
             </div>
         </div>
 
@@ -337,7 +376,7 @@ function renderStars($rating) {
                         <img src="<?= $booking['customer_image']; ?>" class="booking-avatar">
                         <div class="booking-details">
                             <h3><?= htmlspecialchars($booking['customer_name']); ?></h3>
-                            <p style="font-size: 0.75rem; color: var(--text-secondary);">
+                            <p style="font-size:1rem; color: var(--text-secondary);">
                                 <?= $booking['tour']; ?> • <?= $booking['time']; ?>
                             </p>
                         </div>
