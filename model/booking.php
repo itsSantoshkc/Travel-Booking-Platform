@@ -27,15 +27,15 @@ class Booking
         $this->conn->begin_transaction();
 
         try {
-            
+
             $sql = "INSERT INTO booking (booking_id, user_id, package_id, no_of_slots) 
                     VALUES (?, ?, ?, ?)";
-            
+
             $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param("sssi", 
-                $uuid, 
-                $bookingData['user_id'], 
-                $bookingData['package_id'], 
+            $stmt->bind_param("sssi",
+                $uuid,
+                $bookingData['user_id'],
+                $bookingData['package_id'],
                 $bookingData['slots']
             );
 
@@ -45,7 +45,8 @@ class Booking
             $this->conn->commit();
             return ["success" => true, "bookingId" => $uuid];
 
-        } catch (Exception $e) {
+        }
+        catch (Exception $e) {
             $this->conn->rollback();
             error_log("Booking Error: " . $e->getMessage());
             return ["success" => false, "error" => $e->getMessage()];
@@ -62,7 +63,7 @@ class Booking
                 JOIN users u ON b.user_id = u.user_id 
                 WHERE b.package_id = ? 
                 ORDER BY b.booked_at DESC";
-        
+
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("s", $package_id);
         $stmt->execute();
@@ -72,32 +73,32 @@ class Booking
     /**
      * For User: See all my personal bookings with activity details
      */
- public function getBookingsByUserId($userId)
-{
-    
-    $sql = "SELECT b.booking_id, b.no_of_slots, b.booked_at,t.starting_date,t.name as package_name, t.location, t.price
+    public function getBookingsByUserId($userId)
+    {
+
+        $sql = "SELECT b.booking_id, b.no_of_slots, b.booked_at,t.starting_date,t.name as package_name, t.location, t.price
             FROM booking b
             INNER JOIN travelpackages t ON b.package_id = t.package_id
             WHERE b.user_id = ?
             ORDER BY b.booked_at ASC";
 
-    $stmt = $this->conn->prepare($sql);
-    
-    if (!$stmt) {
-        error_log("SQL Prepare Error: " . $this->conn->error);
-        return [];
+        $stmt = $this->conn->prepare($sql);
+
+        if (!$stmt) {
+            error_log("SQL Prepare Error: " . $this->conn->error);
+            return [];
+        }
+
+
+        $type = is_numeric($userId) ? "i" : "s";
+        $stmt->bind_param($type, $userId);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
-
-    
-    $type = is_numeric($userId) ? "i" : "s";
-    $stmt->bind_param($type, $userId);
-    
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    
-    return $result->fetch_all(MYSQLI_ASSOC);
-}
 
     /**
      * Get details of a single booking
@@ -111,7 +112,7 @@ class Booking
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-        /**
+    /**
      * Get details of a single booking
      */
     public function getAllBooking()
@@ -122,83 +123,108 @@ class Booking
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
+    /**
+     * Get the 10 most recent bookings sorted by booked_at
+     */
+    public function getRecentBookings()
+    {
+        $sql = "SELECT b.*, t.name as package_name, t.location, t.price, u.firstName, u.lastName 
+                FROM booking b 
+                INNER JOIN travelpackages t ON b.package_id = t.package_id 
+                INNER JOIN user u ON b.user_id = u.userID 
+                ORDER BY b.booked_at DESC 
+                LIMIT 10";
+
+        $stmt = $this->conn->prepare($sql);
+
+        if (!$stmt) {
+            error_log("SQL Prepare Error: " . $this->conn->error);
+            return [];
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
     public function getSlotsOccupied($package_id)
-{
+    {
 
-    $sql = "SELECT COALESCE(SUM(no_of_slots), 0) as total_occupied
+        $sql = "SELECT COALESCE(SUM(no_of_slots), 0) as total_occupied
             FROM booking 
-            WHERE package_id = ?" ;
+            WHERE package_id = ?";
 
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bind_param("s", $package_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $package_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
 
-    return (int)$row['total_occupied'];
-}
+        return (int)$row['total_occupied'];
+    }
+    public function getSlotsPerTimeByDate($package_id, $date)
+    {
 
-public function getSlotsPerTimeByDate($package_id, $date)
-{
-    
-    $sql = "SELECT time, SUM(no_of_slots) as total_booked 
+        $sql = "SELECT time, SUM(no_of_slots) as total_booked 
             FROM booking 
             WHERE package_id = ? 
             AND booked_for = ? 
             GROUP BY time";
 
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bind_param("ss", $package_id, $date);
-    $stmt->execute();
-    $result = $stmt->get_result();
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ss", $package_id, $date);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    $occupancy = [];
-    while ($row = $result->fetch_assoc()) {
-        
-        $occupancy[$row['time']] = (int)$row['total_booked'];
+        $occupancy = [];
+        while ($row = $result->fetch_assoc()) {
+
+            $occupancy[$row['time']] = (int)$row['total_booked'];
+        }
+
+        return $occupancy;
     }
+    public function getBookingMap($package_id, $datesArray, $timesArray)
+    {
+        // 1. Setup Placeholders for the IN clauses
+        $datePlaceholders = implode(',', array_fill(0, count($datesArray), '?'));
+        $timePlaceholders = implode(',', array_fill(0, count($timesArray), '?'));
 
-    return $occupancy;
-}
-
-public function getBookingMap($package_id, $datesArray, $timesArray) {
-    // 1. Setup Placeholders for the IN clauses
-    $datePlaceholders = implode(',', array_fill(0, count($datesArray), '?'));
-    $timePlaceholders = implode(',', array_fill(0, count($timesArray), '?'));
-
-    $sql = "SELECT booked_for, time, SUM(no_of_slots) as total_booked 
+        $sql = "SELECT booked_for, time, SUM(no_of_slots) as total_booked 
             FROM booking 
             WHERE package_id = ? 
             AND booked_for IN ($datePlaceholders) 
             AND time IN ($timePlaceholders)
             GROUP BY booked_for, time";
 
-    $stmt = $this->conn->prepare($sql);
+        $stmt = $this->conn->prepare($sql);
 
-    // 2. Bind parameters dynamically
-    $types = "s" . str_repeat("s", count($datesArray)) . str_repeat("s", count($timesArray));
-    $params = array_merge([$package_id], $datesArray, $timesArray);
-    $stmt->bind_param($types, ...$params);
-    
-    $stmt->execute();
-    $dbResult = $stmt->get_result();
+        // 2. Bind parameters dynamically
+        $types = "s" . str_repeat("s", count($datesArray)) . str_repeat("s", count($timesArray));
+        $params = array_merge([$package_id], $datesArray, $timesArray);
+        $stmt->bind_param($types, ...$params);
 
-    // 3. Initialize the full associative array with 0s
-    // This ensures even dates/times with NO bookings exist in your array
-    $bookingMap = [];
-    foreach ($datesArray as $date) {
-        foreach ($timesArray as $time) {
-            $bookingMap[$date][$time] = 0;
+        $stmt->execute();
+        $dbResult = $stmt->get_result();
+
+        // 3. Initialize the full associative array with 0s
+        // This ensures even dates/times with NO bookings exist in your array
+        $bookingMap = [];
+        foreach ($datesArray as $date) {
+            foreach ($timesArray as $time) {
+                $bookingMap[$date][$time] = 0;
+            }
         }
+
+        // 4. Fill in the actual data from the database
+        while ($row = $dbResult->fetch_assoc()) {
+            $bookingMap[$row['booked_for']][$row['time']] = (int)$row['total_booked'];
+        }
+
+        return $bookingMap;
     }
 
-    // 4. Fill in the actual data from the database
-    while ($row = $dbResult->fetch_assoc()) {
-        $bookingMap[$row['booked_for']][$row['time']] = (int)$row['total_booked'];
-    }
 
-    return $bookingMap;
-}
 
-    
 }

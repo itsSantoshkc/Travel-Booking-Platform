@@ -1,98 +1,8 @@
 <?php
-include("../middleware/authMiddleware.php"); 
+include("../middleware/authMiddleware.php");
 require_once("../model/User.php");
-
-
-
-$admin_profile = [
-    'name' => 'Jesse James',
-    'email' => 'jesse@gmail.com',
-    'image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop'
-];
-
-
-$stats = [
-    'total_bookings' => 1247,
-    'revenue' => 89200,
-    'avg_rating' => 4.5,
-    'active_tours' => 24
-];
-
-// Recent bookings
-$recent_bookings = [
-    [
-        'id' => 1,
-        'customer_name' => 'Tyril R',
-        'customer_image' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
-        'tour' => 'Everest Helicopter ride',
-        'date' => '2025/12/25',
-        'time' => '10:00 AM',
-        'persons' => 4
-    ],
-    [
-        'id' => 2,
-        'customer_name' => 'Maya R',
-        'customer_image' => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
-        'tour' => 'Everest Helicopter ride',
-        'date' => '2025/12/25',
-        'time' => '2:00 PM',
-        'persons' => 4
-    ],
-    [
-        'id' => 3,
-        'customer_name' => 'Arjun S',
-        'customer_image' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop',
-        'tour' => 'Everest Helicopter ride',
-        'date' => '2025/12/25',
-        'time' => '4:00 PM',
-        'persons' => 4
-    ],
-    [
-        'id' => 4,
-        'customer_name' => 'Rihana K',
-        'customer_image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
-        'tour' => 'Everest Helicopter ride',
-        'date' => '2025/12/25',
-        'time' => '6:00 PM',
-        'persons' => 4
-    ],
-      [
-        'id' => 1,
-        'customer_name' => 'Tyril R',
-        'customer_image' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
-        'tour' => 'Everest Helicopter ride',
-        'date' => '2025/12/25',
-        'time' => '10:00 AM',
-        'persons' => 4
-    ],
-    [
-        'id' => 2,
-        'customer_name' => 'Maya R',
-        'customer_image' => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
-        'tour' => 'Everest Helicopter ride',
-        'date' => '2025/12/25',
-        'time' => '2:00 PM',
-        'persons' => 4
-    ],
-    [
-        'id' => 3,
-        'customer_name' => 'Arjun S',
-        'customer_image' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop',
-        'tour' => 'Everest Helicopter ride',
-        'date' => '2025/12/25',
-        'time' => '4:00 PM',
-        'persons' => 4
-    ],
-    [
-        'id' => 4,
-        'customer_name' => 'Rihana K',
-        'customer_image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
-        'tour' => 'Everest Helicopter ride',
-        'date' => '2025/12/25',
-        'time' => '6:00 PM',
-        'persons' => 4
-    ]
-];
+require_once("../model/stats.php");
+require_once("../model/booking.php");
 
 // Recent reviews
 $recent_reviews = [
@@ -141,32 +51,36 @@ $recent_reviews = [
 ];
 
 
-function renderStars($rating) {
+function renderStars($rating)
+{
     $fullStars = floor($rating);
     $halfStar = ($rating - $fullStars) >= 0.5;
     $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
-    
+
     $stars = str_repeat('★ ', $fullStars);
     if ($halfStar) $stars .= '⯨ ';
     $stars .= str_repeat('☆ ', $emptyStars);
-    
+
     return trim($stars);
 }
 
-$userId = $_SESSION['userID']; 
+$userId = $_SESSION['userID'];
+// No noeed to access the db just get the data from the session
 
 $userObj = new User($conn);
-$userData = $userObj->getUserWithId($userId)['data'];
+$statsObj = new Stats($conn);
+$bookingObj = new Booking($conn);
 
-// public function getDashboardStats() {
-//     $sql = "SELECT 
-//                 (SELECT COUNT(*) FROM Booking) AS total_bookings,
-//                 (SELECT ROUND(AVG(rating), 1) FROM Reviews) AS avg_rating,
-//                 (SELECT COUNT(*) FROM User) AS total_users";
-    
-//     $result = $this->conn->query($sql);
-//     return $result->fetch_assoc();
-// }
+
+$userData = $userObj->getUserWithId($userId)['data'];
+$bookingData = $bookingObj->getRecentBookings();
+
+$dashboardStats = $statsObj->getDashboardStats();
+if ($dashboardStats['success'] == true) {
+    $totalBookings = $dashboardStats['data']['total_bookings'];
+    $avgRating = $dashboardStats['data']['avg_rating'];
+    $totalUsers = $dashboardStats['data']['total_users'];
+}
 ?>
 
 
@@ -203,13 +117,31 @@ $userData = $userObj->getUserWithId($userId)['data'];
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden; /* Prevent body scroll */
+            overflow: hidden;
+            /* Prevent body scroll */
+        }
+
+        .booking-avatar-text {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+            /* Light gray background */
+            border-radius: 50%;
+            /* Keeps it circular like an avatar */
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+            text-transform: capitalize;
         }
 
         /* CONSTRAINT: 80vw width */
         .container {
             width: 80vw;
-            height: 95vh; /* Slight padding from top/bottom */
+            height: 95vh;
+            /* Slight padding from top/bottom */
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
@@ -229,10 +161,28 @@ $userData = $userObj->getUserWithId($userId)['data'];
             animation: fadeInDown 0.6s ease forwards;
         }
 
-        .profile-section { display: flex; align-items: center; gap: 1rem; }
-        .profile-image { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
-        .profile-info h1 {  font-size: 1.2rem; }
-        .profile-info p { font-size: 0.8rem; color: var(--text-secondary); }
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .profile-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            object-fit: cover;
+        }
+
+        .profile-info h1 {
+            font-size: 1.2rem;
+        }
+
+        .profile-info p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
 
         /* Stats Grid - Fixed Height */
         .stats-grid {
@@ -257,10 +207,15 @@ $userData = $userObj->getUserWithId($userId)['data'];
             animation: fadeInUp 0.6s ease forwards;
         }
 
-        .stat-label { font-size: 1.75rem;
-        font-weight: bold;
+        .stat-label {
+            font-size: 1.75rem;
+            font-weight: bold;
         }
-        .stat-value {  font-size: 1.8rem; font-weight: 700; }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
 
         /* Bottom Grid - FLEX GROW to fill remaining space */
         .bottom-grid {
@@ -268,7 +223,8 @@ $userData = $userObj->getUserWithId($userId)['data'];
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
-            min-height: 0; /* Important for nested scrolling */
+            min-height: 0;
+            /* Important for nested scrolling */
         }
 
         .section {
@@ -278,7 +234,8 @@ $userData = $userObj->getUserWithId($userId)['data'];
             box-shadow: var(--shadow-md);
             display: flex;
             flex-direction: column;
-            min-height: 0; /* Allows children to scroll */
+            min-height: 0;
+            /* Allows children to scroll */
         }
 
         .section-title {
@@ -296,12 +253,22 @@ $userData = $userObj->getUserWithId($userId)['data'];
         }
 
         /* Custom Scrollbar */
-        .scrollable-content::-webkit-scrollbar { width: 5px; }
-        .scrollable-content::-webkit-scrollbar-track { background: transparent; }
-        .scrollable-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        .scrollable-content::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .scrollable-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scrollable-content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
 
         /* Items Styling */
-        .booking-item, .review-item {
+        .booking-item,
+        .review-item {
             display: flex;
             align-items: center;
             padding: 0.8rem;
@@ -313,39 +280,99 @@ $userData = $userObj->getUserWithId($userId)['data'];
             cursor: pointer;
         }
 
-        .booking-item:hover, .review-item:hover {
+        .booking-item:hover,
+        .review-item:hover {
             border-color: var(--primary);
         }
 
-        .booking-avatar, .review-avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 12px; }
-        .booking-details h3, .review-info h4 { font-size: 1.5rem; font-weight: 500; }
-        .stars { color: var(--accent); font-size: 1rem; }
+        .booking-avatar,
+        .review-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+        .booking-details{
+            margin-left: 1rem;
+        }
+        .booking-details h3,
+        .review-info h4 {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        .stars {
+            color: var(--accent);
+            font-size: 1rem;
+        }
 
         /* Responsive Breakpoints */
         @media (max-width: 1100px) {
-            .container { width: 95vw; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .container {
+                width: 95vw;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 768px) {
-            .bottom-grid { grid-template-columns: 1fr; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            body { overflow-y: auto; height: auto; padding: 20px 0; }
-            .container { height: auto; }
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            body {
+                overflow-y: auto;
+                height: auto;
+                padding: 20px 0;
+            }
+
+            .container {
+                height: auto;
+            }
         }
 
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
+
 <body>
-    <?php include("header.php");?>
+    <?php include("header.php"); ?>
     <div class="container">
         <header class="header">
             <div class="profile-section">
-                <img src="<?= htmlspecialchars($admin_profile['image']); ?>" class="profile-image">
+                <span class="booking-avatar-text">
+                                <?= htmlspecialchars($userData['firstName'][0]  . $userData['lastName'][0]); ?>
+                            </span>
                 <div class="profile-info">
-                    <h1>Welcome, <?= htmlspecialchars($userData['firstName']. " " .$userData['lastName'] ); ?></h1>
+                    <h1>Welcome, <?= htmlspecialchars($userData['firstName'] . " " . $userData['lastName']); ?></h1>
                     <p><?= htmlspecialchars($userData['email']); ?></p>
                 </div>
             </div>
@@ -354,16 +381,16 @@ $userData = $userObj->getUserWithId($userId)['data'];
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-label">Total Bookings</div>
-                <div class="stat-value"><?= number_format($stats['total_bookings']); ?></div>
+                <div class="stat-value"><?= number_format($totalBookings); ?></div>
             </div>
-          
+
             <div class="stat-card">
                 <div class="stat-label">Avg Rating</div>
-                <div class="stat-value"><?= $stats['avg_rating']; ?> ★</div>
+                <div class="stat-value"><?= $avgRating ?> ★</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">Active Tours</div>
-                <div class="stat-value"><?= $stats['active_tours']; ?></div>
+                <div class="stat-label">Total User Count</div>
+                <div class="stat-value"><?= $totalUsers; ?></div>
             </div>
         </div>
 
@@ -371,16 +398,18 @@ $userData = $userObj->getUserWithId($userId)['data'];
             <div class="section">
                 <h2 class="section-title">Recent Bookings</h2>
                 <div class="scrollable-content">
-                    <?php foreach ($recent_bookings as $booking): ?>
-                    <div class="booking-item">
-                        <img src="<?= $booking['customer_image']; ?>" class="booking-avatar">
-                        <div class="booking-details">
-                            <h3><?= htmlspecialchars($booking['customer_name']); ?></h3>
-                            <p style="font-size:1rem; color: var(--text-secondary);">
-                                <?= $booking['tour']; ?> • <?= $booking['time']; ?>
-                            </p>
+                    <?php foreach ($bookingData as $booking): ?>
+                        <div class="booking-item">
+                            <span class="booking-avatar-text">
+                                <?= htmlspecialchars($booking['firstName'][0] . $booking['lastName'][0]); ?>
+                            </span>
+                            <div class="booking-details">
+                                <h3><?= htmlspecialchars($booking['firstName'] . " " . $booking['lastName']); ?></h3>
+                                <p style="font-size:1rem; color: var(--text-secondary);">
+                                    <?= $booking['package_name']; ?> • <?= $booking['booked_at']; ?>
+                                </p>
+                            </div>
                         </div>
-                    </div>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -389,17 +418,18 @@ $userData = $userObj->getUserWithId($userId)['data'];
                 <h2 class="section-title">Recent Reviews</h2>
                 <div class="scrollable-content">
                     <?php foreach ($recent_reviews as $review): ?>
-                    <div class="review-item">
-                        <img src="<?= $review['customer_image']; ?>" class="review-avatar">
-                        <div class="review-info">
-                            <h4><?= htmlspecialchars($review['customer_name']); ?></h4>
-                            <div class="stars"><?= renderStars($review['rating']); ?></div>
+                        <div class="review-item">
+                            <img src="<?= $review['customer_image']; ?>" class="review-avatar">
+                            <div class="review-info">
+                                <h4><?= htmlspecialchars($review['customer_name']); ?></h4>
+                                <div class="stars"><?= renderStars($review['rating']); ?></div>
+                            </div>
                         </div>
-                    </div>
                     <?php endforeach; ?>
                 </div>
             </div>
         </div>
     </div>
 </body>
+
 </html>
