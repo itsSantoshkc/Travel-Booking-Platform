@@ -90,9 +90,10 @@ class Travel
     public function getAllAvailableTravelPackages()
     {
 
-        $sql = "SELECT  p.*,  GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') as image_list FROM travelPackages p
-                LEFT JOIN package_images i ON p.package_id = i.package_id
-                GROUP BY p.package_id ORDER BY p.created_at DESC;";
+        $sql = "SELECT p.*,GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') AS image_list FROM travelPackages p
+                LEFT JOIN package_images i ON p.package_id = i.package_id WHERE p.starting_date > CURDATE()
+                GROUP BY p.package_id ORDER BY p.created_at DESC;
+";
 
         $result = $this->conn->query($sql);
         $activities = [];

@@ -117,7 +117,7 @@ class Booking
      */
     public function getAllBooking()
     {
-        $sql = "SELECT b.*, a.name, u.firstName FROM booking b INNER JOIN travelPackages a ON b.package_id = a.package_id INNER JOIN user u ON b.user_id = u.userID";
+        $sql = "SELECT b.*, a.*, u.firstName FROM booking b INNER JOIN travelPackages a ON b.package_id = a.package_id INNER JOIN user u ON b.user_id = u.userID";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);

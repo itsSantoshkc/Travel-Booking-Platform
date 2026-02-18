@@ -1,20 +1,20 @@
    <script src="https://kit.fontawesome.com/e07ff84049.js" crossorigin="anonymous"></script>
+   <div>
    <nav
        class="w-screen h-16  bg-white flex justify-between items-center *:mx-28  shadow-md ">
        <a class="text-2xl font-bold cursor-pointer" href="<?php echo BASE_URL; ?>index.php"><i class="fa-solid fa-plane-departure"></i> Travel Booking</a>
        <div class="relative flex flex-col items-center">
            <?php
            require_once dirname(__DIR__) . "/middleware/authMiddleware.php";
-            
+           
+           
+
             if (isLoggedIn()) {
-                // Todo: Use avatar icon instead of the user profie picture
                 echo '<div>
-                
-                <img
-                class="bg-white rounded-full cursor-pointer h-9 w-9 avatar"
-                src="https://png.pngtree.com/png-vector/20231019/ourmid/pngtree-user-profile-avatar-png-image_10211467.png" />
-                </div>';
-                //Todo: Add Hover 
+    <div class="flex items-center justify-center text-sm font-bold rounded-full cursor-pointer select-none bg-slate-100 h-9 w-9 avatar">
+        ' . htmlspecialchars("SK") . '
+    </div>
+</div>';
             } else {
                 echo '<div class="flex items-center justify-center w-64 ">
                <a href="' .BASE_URL. 'signup.php" class="px-3 py-2 mx-2 font-semibold text-white bg-red-500 rounded-lg">Sign Up</a>
@@ -45,6 +45,18 @@
            </div>
        </div>
    </nav>
+<?php 
+if(!isLoggedIn()){
+
+echo '<div class="flex items-center h-10 mx-2 bg-red-300 rounded-b-md ">
+    <p class="px-5 text-xl">Log in to unlock full access to all website features.</p>';
+
+}
+?>
+   
+
+   </div>
+   </div>
    <script>
        const avatar = document.querySelector(".avatar");
 

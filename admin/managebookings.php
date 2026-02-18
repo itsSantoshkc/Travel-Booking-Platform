@@ -19,8 +19,8 @@ include("./header.php");
       <div class="table-header-row" role="presentation">
         <div class="header-cell sn">S.N.</div>
         <div class="header-cell activity">Name</div>
+        <div class="header-cell time">Location</div>
         <div class="header-cell date">Date</div>
-        <div class="header-cell time">Time</div>
         <div class="header-cell bookedby">Booked By</div>
         <div class="header-cell slots">No of Slots</div>
       </div>
@@ -39,8 +39,8 @@ foreach ($bookings as $b) {
     echo "<div class='body-row'>
             <div class='body-cell sn'>{$count}</div>
             <div class='body-cell activity'>{$b['name']}</div>
-            <div class='body-cell date'>{$b['booked_for']}</div>
-            <div class='body-cell time'>{$b['time']}</div>
+            <div class='body-cell time'>{$b['location']}</div>
+            <div class='body-cell date'>{$b['starting_date']}</div>
             <div class='body-cell time'>{$b['firstName']}</div>
             <div class='body-cell slots'>{$b['no_of_slots']}</div>
         </div>";

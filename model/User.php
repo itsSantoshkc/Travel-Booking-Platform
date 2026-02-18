@@ -110,7 +110,7 @@ class User
         }
     }
 
-    function  updateUser($data) {}
+
 
     function newUser($userData)
     {
@@ -140,5 +140,96 @@ class User
         }
     }
 
-    function deleteUser($userId) {}
+
+
+function getAllUser() {
+    $stmt = $this->conn->prepare("SELECT * FROM USER");
+
+    if (!$stmt->execute()) {
+        return ["success" => false, "error" => $stmt->error];
+    }
+
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 0) {
+        return ["success" => false, "error" => "No users found"];
+    }
+
+    // Fetch all rows as associative array
+    $userData = $result->fetch_all(MYSQLI_ASSOC);
+
+    return ["success" => true, "data" => $userData];
 }
+
+function updateUser($data)
+    {
+        if (isset($data['userID'])) {
+            $stmt = $this->conn->prepare("UPDATE user SET firstName=?, lastName=?, email=?, password=?, dateOfBirth=?, phone=?, role=? WHERE userID=?");
+            
+            $stmt->bind_param(
+                "ssssssss",
+                $data['firstName'],
+                $data['lastName'],
+                $data['email'],
+                $data['password'],
+                $data['dateOfBirth'],
+                $data['phone'],
+                $data['role'],
+                $data['userID'] // The unique identifier for the WHERE clause
+            );
+
+            if ($stmt->execute()) {
+                return ["success" => true, "message" => "User updated successfully"];
+            } else {
+                return ["success" => false, "error" => $stmt->error];
+            }
+        } else {
+            return ["success" => false, "error" => "Missing userID"];
+        }
+    }
+
+
+function updateUserRole($data)
+    {
+        if (isset($data['userID'])) {
+            $stmt = $this->conn->prepare("UPDATE user SET role=? WHERE userID=?");
+            
+            $stmt->bind_param(
+                "ss",
+                $data['role'],
+                $data['userID'] // The unique identifier for the WHERE clause
+            );
+
+            if ($stmt->execute()) {
+                return ["success" => true, "message" => "User updated successfully"];
+            } else {
+                return ["success" => false, "error" => $stmt->error];
+            }
+        } else {
+            return ["success" => false, "error" => "Missing userID"];
+        }
+    }
+
+    function deleteUser($userId)
+    {
+        if (isset($userId)) {
+            $stmt = $this->conn->prepare("DELETE FROM user WHERE userID = ?");
+            $stmt->bind_param("s", $userId);
+
+            if ($stmt->execute()) {
+                // Check if a row was actually deleted
+                if ($stmt->affected_rows > 0) {
+                    return ["success" => true, "message" => "User deleted successfully"];
+                } else {
+                    return ["success" => false, "error" => "No user found with that ID"];
+                }
+            } else {
+                return ["success" => false, "error" => $stmt->error];
+            }
+        } else {
+            return ["success" => false, "error" => "Invalid ID"];
+        }
+    }
+}
+
+

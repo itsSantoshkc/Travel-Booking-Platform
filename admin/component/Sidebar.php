@@ -1,5 +1,4 @@
   <!-- Sidebar -->
-
   <style>
       .sidebar {
           width: 297px;
@@ -92,6 +91,9 @@
           <li class="<?= ($slug == 'managePackage.php') ? 'active' : '' ?>">
               <a href="managePackage.php">Manage Travel</a>
           </li>
+          <li class="<?= ($slug == 'manageUser.php') ? 'active' : '' ?>">
+              <a href="manageUser.php">Manage Users</a>
+          </li>
 
           <li class="<?= ($slug == 'newPackage.php') ? 'active' : '' ?>">
               <a href="newPackage.php">New Package</a>
@@ -101,5 +103,5 @@
               <a href="manageProfile.php">Manage Profile</a>
           </li>
       </ul>
-      <button id="logoutBtn" class="logout-btn">Log Out</button>
+      <a id="logoutBtn" href="../logout.php" class="logout-btn">Log Out</a>
   </nav>

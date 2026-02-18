@@ -1,6 +1,6 @@
 <?php
 include("header.php");
-include("conn.php");
+require_once("conn.php");
 include("model/travel_package.php");
 include("model/Review.php");
 include("model/Booking.php");
@@ -11,6 +11,7 @@ include("./components/Navbar.php");
     <link rel="stylesheet" href="css/details.css">
     <script defer src="./js/details.js"></script>
 </head>
+
 
 <main class='activity-container'>
     <div class='image-gallery'>
@@ -71,33 +72,19 @@ include("./components/Navbar.php");
                 }
                     ?>
         </div>
-</main>
+    </main>
+   
+
 
 <?php
 try {
     $reviewObj = new Review($conn);
     $reviewDatas = $reviewObj->getReviewByPackageID($id);
-
-    echo '<section class="reviews">
-    <h2>Ratings & Reviews</h2><div id="reviewsContainer"></div>';
-
-    foreach ($reviewDatas as $reviewData) {
-
-        echo "
-        <div class='review'>
-        <img src ='./public/default-photo.jpg' alt='{$reviewData['firstName']}'>
-        
-        <div class='review-content'>
-        <p class='reviewer-name'>{$reviewData['firstName']}</p>
-        <p class='review-rating'>
-        <i class='fas fa-star' style='color: #FFD700; font-size: 13px;'></i> {$reviewData['rating']} out of 5
-        </p>
-        <p class='review-text'>{$reviewData['review']} </p>
-        <p class='review-date'>{$reviewData['createdAt']}</p>
-        </div>
-        </div>";
-    }
-    echo '</section>';
+    
+    echo '<div class="reviews">';
+    include("review.php");
+ 
+    echo '</div>';
 } catch (Exception $e) {
     echo $e->getMessage();
 }

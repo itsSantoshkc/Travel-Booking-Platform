@@ -11,3 +11,15 @@
 
     <title>Travel Booking Platform</title>
 </head>
+
+<?php 
+include __DIR__ . '/middleware/authMiddleware.php';
+
+
+
+if (isLoggedIn() && isAdmin()) {
+    header("Location: admin/dashboard.php");
+    exit;
+}
+
+?>

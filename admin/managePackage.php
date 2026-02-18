@@ -17,7 +17,7 @@ include("./header.php");
     </header>
 
     <div class="overflow-hidden bg-white border border-gray-200 shadow-sm rounded-xl">
-        <table class="w-full text-left border-collapse">
+        <table class="w-[60vw] text-left border-collapse">
             <thead class="bg-gray-100 border-b border-gray-200">
                 <tr>
                     <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase">S.N.</th>
@@ -35,10 +35,11 @@ include("./header.php");
     <?php
     if (isLoggedIn()) {
         $travelObj = new Travel($conn);
-        $activity = $travelObj->getAllAvailableTravelPackages();
+        $travelData = $travelObj->getAllAvailableTravelPackages();
         $count = 0;
-        if (!empty($activity)) {
-            foreach ($activity as $b) {
+        if (!empty($travelData)) {
+
+            foreach ($travelData as $b) {
                 $count++;
                 ?>
                 <tr class="transition-colors hover:bg-gray-50">

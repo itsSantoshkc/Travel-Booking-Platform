@@ -24,7 +24,7 @@ $results = $travelObj->searchPackage($location, $date, $people);
       
       <?php if (empty($results)): ?>
         <div class="col-span-3 py-20 text-center">
-            <h2 class="text-2xl text-gray-400">No activities found matching your criteria.</h2>
+            <h2 class="text-2xl text-gray-400">No Travel package found matching your criteria.</h2>
             <a href="index.php" class="text-red-500 underline">Clear Filters</a>
         </div>
       <?php else: ?>

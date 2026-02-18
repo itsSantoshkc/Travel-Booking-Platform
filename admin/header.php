@@ -12,7 +12,25 @@
     <div class="flex items-center justify-center w-screen h-screen">
         <aside class="w-1/4 h-full ">
             <?php
+            
 include("./component/Sidebar.php");
+require_once __DIR__ . '/../middleware/authMiddleware.php';
+
+if(!isLoggedIn()){
+    header("Location:" ."/Travel-Booking-Platform/login.php");
+    exit;
+}
+
+require_once __DIR__ . '/../middleware/authMiddleware.php';
+
+
+if(isLoggedIn() && !isAdmin()){
+    header("Location:" ."/Travel-Booking-Platform/index.php");
+    exit;
+}
+
+
+
 ?>
         </aside>
 

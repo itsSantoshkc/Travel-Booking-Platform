@@ -3,7 +3,7 @@
 </head>
 <?php
 include("../header.php");
-include("../conn.php");
+require_once("../conn.php");
 include("../model/Booking.php");
 include("../components/Navbar.php");
 ?>

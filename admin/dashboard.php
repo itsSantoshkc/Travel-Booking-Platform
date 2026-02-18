@@ -1,68 +1,11 @@
 <?php
-include("../middleware/authMiddleware.php");
 require_once("../model/User.php");
 require_once("../model/stats.php");
 require_once("../model/booking.php");
+require_once("../model/Review.php");
+require_once("../utilities/renderStar.php");
+include("header.php");
 
-// Recent reviews
-$recent_reviews = [
-    [
-        'id' => 1,
-        'customer_name' => 'Maya R',
-        'customer_image' => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
-        'rating' => 4.5,
-        'has_review' => false
-    ],
-    [
-        'id' => 2,
-        'customer_name' => 'James',
-        'customer_image' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop',
-        'rating' => 4.5,
-        'has_review' => true
-    ],
-    [
-        'id' => 3,
-        'customer_name' => 'Rihana',
-        'customer_image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
-        'rating' => 4.5,
-        'has_review' => true
-    ],
-    [
-        'id' => 1,
-        'customer_name' => 'Maya R',
-        'customer_image' => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
-        'rating' => 4.5,
-        'has_review' => false
-    ],
-    [
-        'id' => 2,
-        'customer_name' => 'James',
-        'customer_image' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop',
-        'rating' => 4.5,
-        'has_review' => true
-    ],
-    [
-        'id' => 3,
-        'customer_name' => 'Rihana',
-        'customer_image' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
-        'rating' => 4.5,
-        'has_review' => true
-    ]
-];
-
-
-function renderStars($rating)
-{
-    $fullStars = floor($rating);
-    $halfStar = ($rating - $fullStars) >= 0.5;
-    $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
-
-    $stars = str_repeat('★ ', $fullStars);
-    if ($halfStar) $stars .= '⯨ ';
-    $stars .= str_repeat('☆ ', $emptyStars);
-
-    return trim($stars);
-}
 
 $userId = $_SESSION['userID'];
 // No noeed to access the db just get the data from the session
@@ -70,10 +13,12 @@ $userId = $_SESSION['userID'];
 $userObj = new User($conn);
 $statsObj = new Stats($conn);
 $bookingObj = new Booking($conn);
+$ratingObj = new Review($conn);
 
 
 $userData = $userObj->getUserWithId($userId)['data'];
 $bookingData = $bookingObj->getRecentBookings();
+$recent_review = $ratingObj->getAllReview();
 
 $dashboardStats = $statsObj->getDashboardStats();
 if ($dashboardStats['success'] == true) {
@@ -86,12 +31,11 @@ if ($dashboardStats['success'] == true) {
 
 
 <head>
-    <title>Admin Dashboard</title>
     <style>
         :root {
             --primary: #1a2332;
             --primary-light: #2a3b52;
-            --accent: #d4a574;
+            --accent: gold;
             --accent-dark: #b88f5f;
             --bg-main: #f8f6f3;
             --bg-card: #ffffff;
@@ -297,13 +241,15 @@ if ($dashboardStats['success'] == true) {
         }
         .booking-details h3,
         .review-info h4 {
-            font-size: 1.5rem;
+            font-size: 1rem;
             font-weight: 500;
+            padding-left: 10px;
         }
 
         .stars {
             color: var(--accent);
             font-size: 1rem;
+            padding-left: 10px;
         }
 
         /* Responsive Breakpoints */
@@ -363,8 +309,7 @@ if ($dashboardStats['success'] == true) {
     </style>
 </head>
 
-<body>
-    <?php include("header.php"); ?>
+    <?php  ?>
     <div class="container">
         <header class="header">
             <div class="profile-section">
@@ -417,12 +362,19 @@ if ($dashboardStats['success'] == true) {
             <div class="section">
                 <h2 class="section-title">Recent Reviews</h2>
                 <div class="scrollable-content">
-                    <?php foreach ($recent_reviews as $review): ?>
+                    <?php
+                    
+                    foreach ($recent_review as $review): ?>
                         <div class="review-item">
-                            <img src="<?= $review['customer_image']; ?>" class="review-avatar">
+                            <span class="booking-avatar-text">
+                                <?= htmlspecialchars($review['firstName'][0] . $review['lastName'][0]); ?>
+                            </span>
                             <div class="review-info">
-                                <h4><?= htmlspecialchars($review['customer_name']); ?></h4>
+                                <h4><?= htmlspecialchars($review['firstName'] ." ". $review['lastName']); ?> :  <?= htmlspecialchars($review['review']) ?></h4>
                                 <div class="stars"><?= renderStars($review['rating']); ?></div>
+                                <p style="font-size:0.75rem; padding-left:10px; color: var(--text-secondary);">
+                                    <?= $review['name']; ?> • <?= $review['createdAt']; ?>
+                                </p>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -430,6 +382,3 @@ if ($dashboardStats['success'] == true) {
             </div>
         </div>
     </div>
-</body>
-
-</html>

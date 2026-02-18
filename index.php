@@ -10,26 +10,16 @@ include("model/travel_package.php");
   ?>
 
   <div class="flex items-center justify-center w-full my-20 border-gray-600">
-  <div class="flex items-center justify-between w-3/6 h-16 shadow-lg rounded-3xl">
+  <div class="flex items-center justify-between w-2/6 h-16 shadow-lg rounded-3xl">
     <form method="get" action="searchActivity.php" class="flex items-center justify-center w-full">
       
       <div class="w-[90%] *:h-16 *:focus:outline-none *:focus:bg-slate-100 *:text-xl flex justify-center items-center">
-        <input type="text" name="location" id="location" placeholder="Destination" class="w-2/5 px-6 py-1 placeholder:px-2 rounded-l-3xl">
+        <input type="text" name="location" id="location" placeholder="Destination" class="w-1/2 px-2 py-1 placeholder:px-1 rounded-l-3xl">
         
         <span class="flex items-center justify-center mx-1">|</span>
         
-        <input type="date" name="date" id="date" placeholder="Date" class="w-2/5 px-2 py-1 placeholder:px-2">
+        <input type="date" name="date" id="date" placeholder="Date" class="px-2 py-1 W-1/2 placeholder:px-2">
         
-        <span class="flex items-center justify-center mx-1">|</span>
-
-        <select name="noOfPeople" id="noOfPeople" class="w-1/5 px-2 py-1 placeholder:px-2">
-          <option value='0'>No of People</option>
-          <?php
-          for ($i = 1; $i < 12; $i++) {
-            echo "<option value='$i'>$i</option>";
-          }
-          ?>
-        </select>
       </div>
 
       <div class="w-[10%] flex justify-start items-center h-16 rounded-r-3xl">
