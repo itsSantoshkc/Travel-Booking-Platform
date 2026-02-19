@@ -102,28 +102,34 @@ async function validateLogInData(event) {
   const xhr = new XMLHttpRequest();
   xhr.open("POST", "./utilities/logInUser.php", true);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-  xhr.onreadystatechange = function () {
+xhr.onreadystatechange = function () {
     if (xhr.readyState === 4) {
-      if (xhr.status === 200) {
-        try {
-          const response = JSON.parse(xhr.responseText);
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
 
-          if (response.success) {
-            if (response.role === "admin") {
-              return (window.location.href = "admin/dashboard.php");
-            } else {
-              return (window.location.href = "index.php");
+                if (response.success) {
+                    if (response.role === "admin") {
+                        return (window.location.href = "admin/dashboard.php");
+                    } else {
+                        return (window.location.href = "index.php");
+                    }
+                } else {
+                    return showError(response.message);
+                }
+            } catch (error) {
+                return showError("Something went wrong. Please try again.");
             }
-          } else {
-            return showError(response.message);
-          }
-        } catch (error) {
-          return showError(error);
+        } else if (xhr.status >= 400 && xhr.status < 500) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                return showError(response.message || "Request failed. Please try again.");
+            } catch {
+                return showError("An error occurred. Please try again.");
+            }
         }
-      }
     }
-  };
+};  
   xhr.send(formData);
 }
 

@@ -1,4 +1,3 @@
-
 <head>
   <link rel="stylesheet" href="./css/managebookings.css">
 </head>
@@ -10,59 +9,186 @@ include("../middleware/authMiddleware.php");
 include("./header.php");
 ?>
 
-  <section class="main">
-    <header class="page-header">
-      <h2 class="page-title">Manage Bookings</h2>
-    </header>
 
-    <section class="bookings-table-container" aria-labelledby="bookingsHeading">
-      <div class="table-header-row" role="presentation">
-        <div class="header-cell sn">S.N.</div>
-        <div class="header-cell activity">Name</div>
-        <div class="header-cell time">Location</div>
-        <div class="header-cell date">Date</div>
-        <div class="header-cell bookedby">Booked By</div>
-        <div class="header-cell slots">No of Slots</div>
-      </div>
 
-      <div class="table-body-wrapper">
-        <div class="table-body-rows">
-          <?php
-if(isLoggedIn()){
-                    $count = 0;
-                    $userID = $_SESSION["userID"];
-                    $bookingObj = new Booking($conn);
-                    $bookings = $bookingObj->getAllBooking();
-                       
-foreach ($bookings as $b) {
-    $count++;
-    echo "<div class='body-row'>
-            <div class='body-cell sn'>{$count}</div>
-            <div class='body-cell activity'>{$b['name']}</div>
-            <div class='body-cell time'>{$b['location']}</div>
-            <div class='body-cell date'>{$b['starting_date']}</div>
-            <div class='body-cell time'>{$b['firstName']}</div>
-            <div class='body-cell slots'>{$b['no_of_slots']}</div>
-        </div>";
+
+<style>
+
+   .manage-booking-body {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 20px 80px;
+            color: #1e2a4a;
+        }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+
+  h1 {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: #1e2a4a;
+    margin-bottom: 40px;
+    letter-spacing: -0.5px;
+  }
+
+  .table-wrapper {
+    width: 100%;
+    max-width: 1000px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(30, 42, 74, 0.10);
+    border: 1px solid #dde6f5;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead tr {
+    background: #1e2a4a;
+  }
+
+  thead th {
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 800;
+    padding: 18px 16px;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+
+ 
+
+  tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  
+
+  tbody td {
+    padding: 18px 16px;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2c3e6b;
+  }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 28px;
+    max-width: 1000px;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .pagination button {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 1rem;
+    transition: all 0.15s;
+  }
+
+  .pagination .page-num {
+    background: #1e2a4a;
+    color: #fff;
+  }
+
+  .pagination .page-nav {
+    background: #1e2a4a;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pagination .page-nav:hover,
+  .pagination .page-num:hover {
+    background: #2e3f6e;
+  }
+
+  .pagination .page-nav svg {
+    width: 14px;
+    height: 14px;
+    stroke: #fff;
+    stroke-width: 2.5;
+    fill: none;
+  }
+</style>
+
+<main class="manage-booking-body">
+
+<h1>Manage Bookings</h1>
+
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>S.N.</th>
+        <th>Name</th>
+        <th>Location</th>
+        <th>Date</th>
+        <th>Booked By</th>
+        <th>No of Slots</th>
+      </tr>
+    </thead>
+    <tbody>
+     
+        <?php
+        if (isLoggedIn()) {
+          $count = 0;
+          $userID = $_SESSION["userID"];
+          $bookingObj = new Booking($conn);
+          $bookings = $bookingObj->getAllBooking();
+
+          foreach ($bookings as $b) {
+            $count++;
+            echo " <tr>
+             <td>{$count}</td>
+        <td>{$b['name']}</td>
+        <td>{$b['location']}</td>
+        <td>{$b['starting_date']}</td>
+        <td>{$b['firstName']}</td>
+        <td>{$b['no_of_slots']}</td>  </tr>";
+          }
+        }
+        ?>
+
     
-}
-                }
-            ?>
-
-        </div>
-      </div>
-    </section>
-
-    <div class="table-pagination" id="pagination">
-      <button class="pagination-btn arrow-prev" id="prevPage" aria-label="Previous page">
-        <i class="fas fa-chevron-left"></i>
-      </button>
-      <div class="pagination-page-number" id="currentPage">1</div>
-      <button class="pagination-btn arrow-next" id="nextPage" aria-label="Next page">
-        <i class="fas fa-chevron-right"></i>
-      </button>
-    </div>
-  </section>
+    </tbody>
+  </table>
 
 
-  <script src="./js/managebookings.js"></script>
+</div>
+
+  <div class="pagination">
+  <button class="page-nav">
+    <svg viewBox="0 0 24 24">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  </button>
+  <button class="page-num">1</button>
+  <button class="page-nav">
+    <svg viewBox="0 0 24 24">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  </button>
+</div>
+
+</main>

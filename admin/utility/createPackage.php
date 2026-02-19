@@ -37,9 +37,7 @@ if (!is_numeric($price)) {
     $errors[] = "Price must be a number.";
 }
 
-/* -------------------------------------------------
-   Handle image uploads
-------------------------------------------------- */
+
 for ($i = 1; $i <= $maxImages; $i++) {
     $key = "image_$i";
 
@@ -68,16 +66,12 @@ for ($i = 1; $i <= $maxImages; $i++) {
     $totalUploaded++;
 }
 
-/* -------------------------------------------------
-   Enforce minimum image count
-------------------------------------------------- */
+
 if ($totalUploaded < $minImages) {
     $errors[] = "You must upload at least $minImages images (uploaded: $totalUploaded).";
 }
 
-/* -------------------------------------------------
-   Cleanup uploaded files on error
-------------------------------------------------- */
+
 if (!empty($errors)) {
     foreach ($uploadedFiles as $file) {
         if (file_exists($file)) {
@@ -94,9 +88,7 @@ if (!empty($errors)) {
     return;
 }
 
-/* -------------------------------------------------
-   Prepare activity payload
-------------------------------------------------- */
+
 $packageData = [
     'name'          => $name,
     'price'         => (float)$price,
@@ -108,9 +100,6 @@ $packageData = [
     'starting_date' => $startingDate,
     'images'        => $uploadedFiles,
 ];
-/* -------------------------------------------------
-   Persist activity
-------------------------------------------------- */
 
 
 $packageModel = new Travel($conn);
@@ -122,7 +111,4 @@ echo "<p>Activity '{$name}' created with {$totalUploaded} images.</p>";
 }else{
     echo "Error Uploading File";
 }
-/* -------------------------------------------------
-   Success response
-------------------------------------------------- */
 

@@ -2,10 +2,10 @@
     <link rel="stylesheet" href="css/newactivity.css" />
 </head>
 <?php
-include("./component/Sidebar.php");
-include("../header.php");
+require_once("./header.php");
 ?>
-<form class="main" action="createPackage.php" enctype="multipart/form-data" method="post" onsubmit="return handleSubmit(event)">
+<div class="h-screen pt-20 ">
+<form  action="createPackage.php" enctype="multipart/form-data" method="post" onsubmit="return handleSubmit(event)">
     <div class="flex justify-center w-[500px]">
         <div class="grid grid-cols-3 gap-5 place-content-center  *:rounded-xl ">
 
@@ -92,7 +92,7 @@ include("../header.php");
         <button type="submit" class="create-btn">Create</button>
     </div>
 </form>
-
+</div>
 <script src="./js/newactivity.js"></script>
 </body>
 

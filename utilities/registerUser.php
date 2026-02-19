@@ -62,13 +62,6 @@ if (!preg_match('/^\d{10}$/', $phone)) {
 
 $hash = password_hash($password, PASSWORD_BCRYPT);
 
-//  $userData['firstName'],
-//                 $userData['lastName'],
-//                 $userData['email'],
-//                 $userData['password'],
-//                 $userData['dateOfBirth'],
-//                 $userData['phone'],
-//                 $userData['role']
 
 
 $user = new User($conn);
@@ -79,6 +72,7 @@ $userData = $user->newUser($newUser);
 if ($userData['success']) {
     $_SESSION["userID"] = $userData['userId'];
     $_SESSION["role"] = "user";
+    $_SESSION["verified"] = false;
 
     http_response_code(200);
     echo json_encode([

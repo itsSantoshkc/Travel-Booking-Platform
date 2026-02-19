@@ -5,15 +5,7 @@ body {
 }
 
 /* MAIN CONTENT */
-.main-content {
-    margin-top: 48px; /* Reduced from 60px to 48px - less space below navbar */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0.5rem 2rem; /* Reduced from 1rem to 0.5rem */
-    width: 100%;
-    box-sizing: border-box;
-}
+
 
 /* Page Header - Reduced padding */
 .page-header {
@@ -32,7 +24,7 @@ body {
 
 /* TABLE CONTAINER - Same format as managebookings */
 .bookings-table-container {
-    width: 800px; /* Adjusted for 5 columns instead of 6 */
+    width: 850px; /* Adjusted for 5 columns instead of 6 */
     background: #EDF2F4;
     border-radius: 30px;
     overflow: hidden;
@@ -126,6 +118,7 @@ body {
     padding: 0 15px;
     box-sizing: border-box;
     height: 100%;
+    width: 100%;
 }
 
 /* Remove border from last body cell in each row */
@@ -306,7 +299,7 @@ body {
     }
     
     .table-header-row .header-cell {
-        padding: 0 12px;
+        padding: 0 10px;
     }
     
     .pagination-btn,

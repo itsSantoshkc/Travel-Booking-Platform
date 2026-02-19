@@ -1,6 +1,6 @@
 <?php
 include("../conn.php");
-include("../middleware/authMiddleware.php"); // Assuming this sets $_SESSION['userID']
+include("../middleware/authMiddleware.php");
 include("./header.php");
 
 $userId = $_SESSION['userID']; 
@@ -11,91 +11,351 @@ $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $fName = $_POST['firstName'];
-    $lName = $_POST['lastName'];
-    $dob   = $_POST['dateOfBirth'];
-    $phone = $_POST['phone'];
+    $fName       = $_POST['firstName'];
+    $lName       = $_POST['lastName'];
+    $dob         = $_POST['dateOfBirth'];
+    $phone       = $_POST['phone'];
+    $newEmail    = trim($_POST['email']);
+    $newPassword = $_POST['new_password'];
 
-    $sqlUp = "UPDATE user SET firstName = ?, lastName = ?, dateOfBirth = ?, phone = ? WHERE userID = ?";
+    $sqlUp = "UPDATE user SET firstName = ?, lastName = ?, dateOfBirth = ?, phone = ?, email = ? WHERE userID = ?";
     $stmtUp = $conn->prepare($sqlUp);
-    $stmtUp->bind_param("sssss", $fName, $lName, $dob, $phone, $userId);
-    
-    if ($stmtUp->execute()) {
-        echo "<script>alert('Profile Updated Successfully!'); window.location.href='manageProfile.php';</script>";
+    $stmtUp->bind_param("ssssss", $fName, $lName, $dob, $phone, $newEmail, $userId);
+    $success = $stmtUp->execute();
+
+    if (!empty($newPassword)) {
+        $hashed = password_hash($newPassword, PASSWORD_BCRYPT);
+        $sqlPwd = "UPDATE user SET password = ? WHERE userID = ?";
+        $stmtPwd = $conn->prepare($sqlPwd);
+        $stmtPwd->bind_param("ss", $hashed, $userId);
+        $success = $stmtPwd->execute();
     }
+
+    if ($success) {
+        echo "<script>window.location.href='manageProfile.php?status=success';</script>";
+    } else {
+        echo "<script>window.location.href='manageProfile.php?status=fail';</script>";
+    }
+    exit;
 }
 ?>
 
-<main class="w-full max-w-3xl px-4 py-10 mx-auto">
-    <div class="overflow-hidden bg-white border border-gray-100 shadow-xl rounded-3xl">
-        
-        <div class="relative h-32 bg-gradient-to-r from-red-500 to-orange-400">
-            <div class="absolute -bottom-12 left-8">
-                <div class="flex items-center justify-center w-24 h-24 text-3xl font-bold text-red-500 bg-white border-4 border-white shadow-lg rounded-2xl">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #f8fafc;
+    font-family: sans-serif;
+  }
+
+  /* ── Page wrapper ── */
+  .profile-page {
+    width: 100%;
+    max-width: 768px;
+    padding: 40px 16px;
+    margin: 0 auto;
+  }
+
+  /* ── Card ── */
+  .profile-card {
+    background: #fff;
+    border: 1px solid #f1f5f9;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+    overflow: hidden;
+  }
+
+  /* ── Banner ── */
+  .profile-banner {
+    position: relative;
+    height: 128px;
+    background: linear-gradient(to right, #ef4444, #fb923c);
+  }
+
+  .profile-avatar-wrapper {
+    position: absolute;
+    bottom: -48px;
+    left: 32px;
+  }
+
+  .profile-avatar {
+    width: 96px;
+    height: 96px;
+    background: #fff;
+    border: 4px solid #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ef4444;
+  }
+
+  /* ── Card body ── */
+  .profile-body {
+    padding: 64px 32px 32px;
+  }
+
+  /* ── User info header ── */
+  .profile-info {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .profile-name {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 4px;
+  }
+
+  .profile-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+
+  .profile-meta i {
+    font-size: 0.75rem;
+  }
+
+  .profile-role-badge {
+    padding: 2px 8px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Form ── */
+  .profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 640px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-actions { flex-direction: column; }
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .form-label {
+    margin-left: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+  }
+
+  .input-wrapper {
+    position: relative;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: #94a3b8;
+    pointer-events: none;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 12px 16px 12px 40px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    outline: none;
+    font-size: 0.95rem;
+    color: #1e293b;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+  }
+
+  .form-input:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.12);
+    background: #fff;
+  }
+
+  /* ── Credentials section ── */
+  .credentials-section {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 16px;
+  }
+
+  .credentials-label {
+    margin-left: 4px;
+    margin-bottom: 16px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Actions ── */
+  .form-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    padding-top: 24px;
+    border-top: 1px solid #f8fafc;
+  }
+
+  .btn-save {
+    flex: 1;
+    padding: 16px;
+    background: #1e293b;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s, transform 0.1s;
+    font-family: inherit;
+  }
+
+  .btn-save:hover  { background: #0f172a; }
+  .btn-save:active { transform: scale(0.98); }
+</style>
+
+<main class="profile-page">
+    <div class="profile-card">
+
+        <div class="profile-banner">
+            <div class="profile-avatar-wrapper">
+                <div class="profile-avatar">
                     <?= strtoupper(substr($user['firstName'], 0, 1) . substr($user['lastName'], 0, 1)) ?>
                 </div>
             </div>
         </div>
 
-        <div class="px-8 pt-16 pb-8">
-            <div class="flex items-start justify-between mb-8">
+        <div class="profile-body">
+
+            <div class="profile-info">
                 <div>
-                    <h2 class="text-2xl font-extrabold text-slate-800"><?= htmlspecialchars($user['firstName'] . ' ' . $user['lastName']) ?></h2>
-                    <p class="flex items-center gap-2 text-slate-500">
-                        <i class="text-xs fas fa-envelope"></i> <?= htmlspecialchars($user['email']) ?>
-                        <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-full uppercase tracking-tighter"><?= $user['role'] ?></span>
+                    <h2 class="profile-name"><?= htmlspecialchars($user['firstName'] . ' ' . $user['lastName']) ?></h2>
+                    <p class="profile-meta">
+                        <i class="fas fa-envelope"></i>
+                        <?= htmlspecialchars($user['email']) ?>
+                        <span class="profile-role-badge"><?= $user['role'] ?></span>
                     </p>
                 </div>
             </div>
 
-            <form action="" method="POST" class="space-y-6">
-                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div class="space-y-1">
-                        <label class="ml-1 text-xs font-bold uppercase text-slate-400">First Name</label>
-                        <div class="relative">
-                            <i class="absolute text-xs -translate-y-1/2 fas fa-user left-4 top-1/2 text-slate-400"></i>
-                            <input type="text" name="firstName" value="<?= htmlspecialchars($user['firstName']) ?>" 
-                                   class="w-full py-3 pl-10 pr-4 transition-all border outline-none bg-slate-50 border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500">
+            <form action="" method="POST" class="profile-form">
+
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="form-label">First Name</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" name="firstName" class="form-input"
+                                   value="<?= htmlspecialchars($user['firstName']) ?>">
                         </div>
                     </div>
 
-                    <div class="space-y-1">
-                        <label class="ml-1 text-xs font-bold uppercase text-slate-400">Last Name</label>
-                        <div class="relative">
-                            <i class="absolute text-xs -translate-y-1/2 fas fa-user left-4 top-1/2 text-slate-400"></i>
-                            <input type="text" name="lastName" value="<?= htmlspecialchars($user['lastName']) ?>" 
-                                   class="w-full py-3 pl-10 pr-4 transition-all border outline-none bg-slate-50 border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500">
+                    <div class="form-field">
+                        <label class="form-label">Last Name</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" name="lastName" class="form-input"
+                                   value="<?= htmlspecialchars($user['lastName']) ?>">
                         </div>
                     </div>
 
-                    <div class="space-y-1">
-                        <label class="ml-1 text-xs font-bold uppercase text-slate-400">Phone Number</label>
-                        <div class="relative">
-                            <i class="absolute text-xs -translate-y-1/2 fas fa-phone left-4 top-1/2 text-slate-400"></i>
-                            <input type="text" name="phone" value="<?= htmlspecialchars($user['phone']) ?>" 
-                                   class="w-full py-3 pl-10 pr-4 transition-all border outline-none bg-slate-50 border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500">
+                    <div class="form-field">
+                        <label class="form-label">Phone Number</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone input-icon"></i>
+                            <input type="text" name="phone" class="form-input"
+                                   value="<?= htmlspecialchars($user['phone']) ?>">
                         </div>
                     </div>
 
-                    <div class="space-y-1">
-                        <label class="ml-1 text-xs font-bold uppercase text-slate-400">Date of Birth</label>
-                        <div class="relative">
-                            <i class="absolute text-xs -translate-y-1/2 fas fa-calendar left-4 top-1/2 text-slate-400"></i>
-                            <input type="date" name="dateOfBirth" value="<?= date('Y-m-d', strtotime($user['dateOfBirth'])) ?>" 
-                                   class="w-full py-3 pl-10 pr-4 transition-all border outline-none bg-slate-50 border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500">
+                    <div class="form-field">
+                        <label class="form-label">Date of Birth</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-calendar input-icon"></i>
+                            <input type="date" name="dateOfBirth" class="form-input"
+                                   value="<?= date('Y-m-d', strtotime($user['dateOfBirth'])) ?>">
                         </div>
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-4 pt-6 border-t border-slate-50 md:flex-row">
-                    <button type="submit" class="flex-1 py-4 bg-slate-800 text-white font-bold rounded-2xl hover:bg-slate-900 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                <!-- Account Credentials -->
+                <div class="credentials-section">
+                    <p class="credentials-label">Account Credentials</p>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label class="form-label">Email Address</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" name="email" class="form-input"
+                                       value="<?= htmlspecialchars($user['email']) ?>">
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="form-label">New Password</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" name="new_password" class="form-input"
+                                       placeholder="Leave blank to keep current">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-save">
                         Save Changes
                     </button>
-                    <button type="button" onclick="togglePasswordModal()" class="flex items-center justify-center flex-1 gap-2 py-4 font-bold transition-all bg-white border border-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50">
-                        <i class="fas fa-lock"></i> Change Password
-                    </button>
                 </div>
+
             </form>
         </div>
     </div>
 </main>
+
+<?php
+require_once "../components/Notificaton.php";
+$status = isset($_GET['status']) ? $_GET['status'] : "";
+if (!empty($status)) {
+    if ($status == 'success') {
+        showToast("Profile updated successfully", 'success');
+    } else if ($status == 'fail') {
+        showToast("Unable to update profile", 'error');
+    }
+}
+?>

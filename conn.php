@@ -6,7 +6,7 @@ $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "travelbook";
-require_once __DIR__ . "/components/Notificaton.php";
+
 
 define('BASE_URL', "http://" . $_SERVER['HTTP_HOST'] . "/Travel-Booking-Platform/");
 $conn = new mysqli($servername, $username, $password, $dbname);

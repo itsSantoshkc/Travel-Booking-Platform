@@ -34,5 +34,5 @@ if(isLoggedIn() && !isAdmin()){
 ?>
         </aside>
 
-        <main class="flex items-center justify-center w-3/4 h-full mt-10 ">
+        <main class="flex items-center justify-center w-3/4 h-full mt-15 ">
             

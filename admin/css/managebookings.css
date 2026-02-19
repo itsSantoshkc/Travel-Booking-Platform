@@ -1,6 +1,4 @@
-/* managebookings.css - Only bookings-specific styles */
 
-/* Center the main content */
 .main {
     display: flex;
     flex-direction: column;
@@ -11,7 +9,6 @@
     box-sizing: border-box;
 }
 
-/* Page Header */
 .page-header {
     width: 100%;
     text-align: center;
@@ -26,9 +23,8 @@
     margin-bottom: 0.5rem;
 }
 
-/* TABLE CONTAINER - Increased width for better spacing */
 .bookings-table-container {
-    width: 920px; /* Increased from 900px */
+    width: 920px; 
     background: #EDF2F4;
     border-radius: 30px;
     overflow: hidden;
@@ -39,13 +35,12 @@
     box-sizing: border-box;
 }
 
-/* TABLE HEADER - Increased widths with centered text */
 .table-header-row {
     width: 100%;
     height: 55px;
     background: #2B2D42;
     display: grid;
-    grid-template-columns: 80px 260px 140px 120px 180px 140px; /* Increased last column from 120px to 140px */
+    grid-template-columns: 80px 260px 140px 120px 180px 140px; 
     align-items: stretch;
     color: #FFFFFF;
     font-weight: 700;
@@ -55,13 +50,11 @@
     white-space: nowrap;
     box-sizing: border-box;
 }
-
-/* Header cells - All centered */
 .table-header-row .header-cell {
     text-align: center;
     display: flex;
     align-items: center;
-    justify-content: center; /* Center all header text */
+    justify-content: center; 
     position: relative;
     white-space: nowrap;
     padding: 0 15px;
@@ -70,12 +63,10 @@
     border-right: 1px solid #2B2D42;
 }
 
-/* Remove border from last header cell */
 .table-header-row .header-cell:last-child {
     border-right: none;
 }
 
-/* Table body wrapper */
 .table-body-wrapper {
     width: 100%;
     overflow: visible;
@@ -83,17 +74,15 @@
     box-sizing: border-box;
 }
 
-/* Body rows container */
 .table-body-rows {
     width: 100%;
     display: flex;
     flex-direction: column;
 }
 
-/* Body rows - using CSS Grid with increased width */
 .body-row {
     display: grid;
-    grid-template-columns: 80px 260px 140px 120px 180px 140px; /* EXACT same as header - increased last column */
+    grid-template-columns: 80px 260px 140px 120px 180px 140px;
     margin: 0;
     padding: 0;
     border-bottom: 1px solid #8D99AE;
@@ -104,9 +93,8 @@
     width: 100%;
 }
 
-/* Body cells - ALL CENTERED with continuous borders */
 .body-cell {
-    text-align: center; /* Center all text */
+    text-align: center; 
     font-weight: 600;
     font-size: 16px;
     color: #2B2D42;
@@ -114,7 +102,7 @@
     border-right: 1px solid #8D99AE;
     display: flex;
     align-items: center;
-    justify-content: center; /* Center all content */
+    justify-content: center; 
     position: relative;
     white-space: nowrap;
     overflow: visible;

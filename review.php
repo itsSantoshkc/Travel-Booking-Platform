@@ -289,12 +289,7 @@ $package_id = isset($_GET['package']) ? $_GET['package'] : '';
 $reviewObj = new Review($conn);
 $reviews = $reviewObj->getReviewByPackageID($package_id);
 foreach($reviews as $review){
-  // array(8) { ["review_id"]=> string(36) "9a22b11e-d182-4398-9354-2dde55def9cc" 
-  // ["review"]=> string(2) "ds" 
-  // ["user_id"]=> string(36) "7e1c4682-1e5a-4ebf-b839-6899993fcd6c" 
-  // ["rating"]=> int(3) ["createdAt"]=> string(19) "2026-02-18 21:13:00" 
-  // ["package_id"]=> string(7) "PKG-012" 
-  // ["firstName"]=> string(7) "Santosh" ["lastName"]=> string(2) "Kc" }
+
 echo "<div class='review-item'>
         <div class='item-avatar' style='background:#fde8d8;color:#c0622a'>" 
             . $review['firstName'][0] . "." . $review['lastName'][0] . 

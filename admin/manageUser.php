@@ -1,18 +1,15 @@
 <?php
 include("../conn.php");
-include("../model/user.php");         // adjust to your actual User model
+include("../model/user.php");        
 include("../middleware/authMiddleware.php");
 include("./header.php");
-
-// Handle role update via POST (AJAX)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_role') {
     header('Content-Type: application/json');
     $userId = intval($_POST['user_id'] ?? 0);
     $newRole = trim($_POST['role'] ?? '');
-    $allowedRoles = ['admin', 'user', 'moderator']; // adjust to your roles
+    $allowedRoles = ['admin', 'user']; 
 
     if ($userId && in_array($newRole, $allowedRoles)) {
-        // Direct query — replace with your User model method if available
         $stmt = $conn->prepare("UPDATE users SET role = ? WHERE user_id = ?");
         $stmt->bind_param("si", $newRole, $userId);
         echo $stmt->execute()
@@ -79,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                             $role = htmlspecialchars($u['role'] ?? 'user');
                             ?>
                             <tr class="transition-colors hover:bg-gray-50 user-row">
-                                <form action="updateRole.php" method="post">
+                                <form action="utility/updateRole.php" method="post">
                                 <td class="px-4 py-4 text-sm text-gray-700"><?=  $i + 1?></td>
                                 <td class="px-4 py-4 text-sm font-medium text-gray-900 searchable">
                                     <?php echo htmlspecialchars($u['firstName']); ?>
@@ -111,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                         >Save</button>
                                         <button
                                             type="button"
-                                            onclick="confirmDeleteUser(<?php echo $u['userID']; ?>)"
+                                            onclick="confirmDeleteUser('<?php echo $u['userID']; ?>')"
                                             class="text-red-500 transition hover:text-red-700"
                                             title="Delete user"
                                         >
@@ -133,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     </div>
 
     <!-- Pagination -->
-    <div class="flex items-center justify-between p-4 mt-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+    <!-- <div class="flex items-center justify-between p-4 mt-6 bg-white border border-gray-200 rounded-lg shadow-sm">
         <span class="text-sm text-gray-600" id="pageLabel">Page 1 of 1</span>
         <div class="flex space-x-2">
             <button class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50" id="prevPage">
@@ -143,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <i class="text-xs fas fa-chevron-right"></i>
             </button>
         </div>
-    </div>
+    </div> -->
 
 </section>
 
@@ -151,20 +148,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 <div id="toastContainer" style="position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;align-items:center;gap:.5rem;pointer-events:none;"></div>
 
 <script>
-// ── Toast ──────────────────────────────────────────────────────────
-function showToast(msg, type = 'success') {
-    const t = document.createElement('div');
-    t.textContent = msg;
-    t.style.cssText = `
-        background:${type === 'success' ? '#1a1a1a' : '#e53e3e'};
-        color:#fff;padding:.55rem 1.1rem;border-radius:100px;
-        font-size:.82rem;box-shadow:0 8px 30px rgba(0,0,0,.18);
-        animation:toastIn .3s cubic-bezier(.34,1.56,.64,1) both;
-        pointer-events:auto;
-    `;
-    document.getElementById('toastContainer').appendChild(t);
-    setTimeout(() => t.remove(), 3000);
-}
+
+
 
 // ── Role change ─────────────────────────────────────────────────────
 document.querySelectorAll('.role-select').forEach(select => {
@@ -180,7 +165,6 @@ document.querySelectorAll('.role-select').forEach(select => {
 
 
 
-// ── Search ──────────────────────────────────────────────────────────
 const searchInput  = document.getElementById('userSearch');
 const searchCount  = document.getElementById('searchCount');
 const rows         = document.querySelectorAll('.user-row');
@@ -201,10 +185,9 @@ searchInput.addEventListener('input', function () {
     searchCount.textContent = q ? `${visible} result${visible !== 1 ? 's' : ''}` : '';
 });
 
-// ── Delete ──────────────────────────────────────────────────────────
 function confirmDeleteUser(id) {
     if (confirm('Are you sure you want to delete this user?')) {
-        window.location.href = `delete_user.php?id=${id}`;
+        window.location.href = `utility/deleteUser.php?id=${id}`;
     }
 }
 </script>
@@ -215,3 +198,21 @@ function confirmDeleteUser(id) {
     to   { opacity:1; transform:translateY(0) scale(1); }
 }
 </style>
+
+
+<?php
+require_once   "../components/Notificaton.php";
+$status = isset($_GET['status']) ? $_GET['status'] :"";
+
+
+if(!empty($status)){
+    if($status == 'success'){
+    showToast("Action Completed Successfully",'success');
+    }else if($status == 'fail'){
+    showToast("Unable to perform current action",'error');
+    }
+
+}
+
+
+?>

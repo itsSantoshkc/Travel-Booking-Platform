@@ -90,10 +90,22 @@ class Travel
     public function getAllAvailableTravelPackages()
     {
 
-        $sql = "SELECT p.*,GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') AS image_list FROM travelPackages p
-                LEFT JOIN package_images i ON p.package_id = i.package_id WHERE p.starting_date > CURDATE()
-                GROUP BY p.package_id ORDER BY p.created_at DESC;
-";
+        $sql = "SELECT p.*, 
+    GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') AS image_list, 
+    COALESCE(b.booked_slots, 0) AS booked_slots,
+    ROUND(COALESCE(AVG(r.rating), 0), 1) AS avg_rating,
+    COUNT(DISTINCT r.review_id) AS total_reviews
+FROM travelPackages p 
+LEFT JOIN package_images i ON p.package_id = i.package_id 
+LEFT JOIN (
+    SELECT package_id, SUM(no_of_slots) AS booked_slots 
+    FROM booking 
+    GROUP BY package_id
+) b ON p.package_id = b.package_id
+LEFT JOIN reviews r ON p.package_id = r.package_id
+WHERE p.starting_date > CURDATE() 
+GROUP BY p.package_id 
+ORDER BY p.created_at DESC";
 
         $result = $this->conn->query($sql);
         $activities = [];
@@ -112,63 +124,62 @@ class Travel
         return $activities;
     }
 
-    public function searchPackage($location, $date, $people)
-    {
-        // Start with a base query
-        $sql = "SELECT t.*, GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') as image_list
-            FROM travelPackages t
-            LEFT JOIN package_images i ON t.package_id = i.package_id
-            WHERE 1=1"; // 'WHERE 1=1' allows us to easily append AND conditions
+public function searchPackage($location, $date)
+{
+    $sql = "SELECT t.*, 
+            GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') AS image_list,
+            COALESCE(b.booked_slots, 0) AS booked_slots,
+            ROUND(COALESCE(AVG(r.rating), 0), 1) AS avg_rating,
+            COUNT(DISTINCT r.review_id) AS total_reviews
+        FROM travelPackages t
+        LEFT JOIN package_images i ON t.package_id = i.package_id
+        LEFT JOIN (
+            SELECT package_id, SUM(no_of_slots) AS booked_slots 
+            FROM booking 
+            GROUP BY package_id
+        ) b ON t.package_id = b.package_id
+        LEFT JOIN reviews r ON t.package_id = r.package_id
+        WHERE 1=1";
 
-        $params = [];
-        $types = "";
+    $params = [];
+    $types = "";
 
-        // Dynamically add filters if they are provided
-        if (!empty($location)) {
-            $sql .= " AND t.location LIKE ?";
-            $params[] = "%$location%";
-            $types .= "s";
-        }
-
-        if (!empty($date)) {
-            $sql .= " AND t.starting_date = ?";
-            $params[] = $date;
-            $types .= "s";
-        }
-
-        if ($people > 0) {
-            $sql .= " AND t.totalSlots >= ?";
-            $params[] = $people;
-            $types .= "i";
-        }
-
-        $sql .= " GROUP BY t.package_id ORDER BY t.created_at DESC";
-
-        $stmt = $this->conn->prepare($sql);
-
-        if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
-        }
-
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        $activities = [];
-        while ($row = $result->fetch_assoc()) {
-            $row['images'] = $row['image_list'] ? explode('|', $row['image_list']) : [];
-            $activities[] = $row;
-        }
-        return $activities;
+    if (!empty($location)) {
+        $sql .= " AND t.location LIKE ?";
+        $params[] = "%$location%";
+        $types .= "s";
     }
+
+    if (!empty($date)) {
+        $sql .= " AND t.starting_date = ?";
+        $params[] = $date;
+        $types .= "s";
+    }
+
+    $sql .= " GROUP BY t.package_id ORDER BY t.created_at DESC";
+
+    $stmt = $this->conn->prepare($sql);
+
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $activities = [];
+    while ($row = $result->fetch_assoc()) {
+        $row['images'] = $row['image_list'] ? explode('|', $row['image_list']) : [];
+        $activities[] = $row;
+    }
+    return $activities;
+}
 
     public function getTravelPackageById($id)
     {
         // Fix: WHERE comes before GROUP BY. 
         // We fetch the piped strings for images, slots, and days in one go.
-        $sql = "SELECT t.*, GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') as image_list,stats.booked_slots FROM travelpackages t
-                LEFT JOIN package_images i ON t.package_id = i.package_id 
-                LEFT JOIN (SELECT package_id, SUM(no_of_slots) as booked_slots FROM booking  GROUP BY package_id ) AS stats
-                ON t.package_id = stats.package_id WHERE t.package_id = ? GROUP BY t.package_id;";
+        $sql = "SELECT t.*, GROUP_CONCAT(DISTINCT i.image_path SEPARATOR '|') AS image_list, stats.booked_slots, ROUND(AVG(r.rating), 1) AS avg_rating, COUNT(DISTINCT r.review_id) AS total_reviews FROM travelpackages t LEFT JOIN package_images i ON t.package_id = i.package_id LEFT JOIN ( SELECT package_id, SUM(no_of_slots) AS booked_slots FROM booking GROUP BY package_id ) AS stats ON t.package_id = stats.package_id LEFT JOIN reviews r ON t.package_id = r.package_id WHERE t.package_id = ? GROUP BY t.package_id;";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("s", $id);
@@ -207,5 +218,27 @@ class Travel
             $this->conn->rollback();
             return false;
         }
+    }
+
+    public function deleteTravelPackage($id){
+ $this->conn->begin_transaction();
+        try {
+            
+            // 1. Update the main Activity table
+            $stmt = $this->conn->prepare("DELETE FROM travelpackages WHERE package_id = ?");
+
+            $stmt->bind_param("s",  $id);
+            $stmt->execute();
+
+            // Commit transaction
+            $this->conn->commit();
+            return true;
+        } catch (Exception $e) {
+            echo $e->getMessage();
+            // Rollback if anything fails
+            $this->conn->rollback();
+            return false;
+        }
+
     }
 }

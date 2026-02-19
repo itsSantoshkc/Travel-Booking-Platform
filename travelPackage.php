@@ -33,7 +33,7 @@ include("./components/Navbar.php");
                     $class = ($i === 0) ? 'main-grid-image' : 'sub-grid-image';
                     echo "<img class='{$class}' src='{$image}' alt='Activity Image' />";
                 }
-
+                $avgRating = !empty($packageData['avg_rating']) ? $packageData['avg_rating'] : 0;
                 echo "</div></div></div>";
                 echo "<div class='details'>
                         <h1 id='activityTitle'>{$packageData['name']}</h1>
@@ -42,7 +42,7 @@ include("./components/Navbar.php");
                         <!-- <span class='view-location'>View Full Location</span> -->
                         </p>
                         <p class='rating' id='activityRating'>
-                            <i class='fas fa-star' style='color: #FFD700; font-size: 13px;'></i> 5 out of 5
+                            <i class='fas fa-star' style='color: #FFD700; font-size: 13px;'></i> {$avgRating} out of 5
                         </p>
                         <p class='description' id='activityDescription'>{$packageData['description']}</p>
                         <div class='tags' id='activityTags'>

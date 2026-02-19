@@ -3,106 +3,267 @@ include("../conn.php");
 include("../model/travel_package.php");
 include("../middleware/authMiddleware.php");
 include("./header.php");
-?>
 
-<head>
-    <link rel="stylesheet" href="./css/managebookings.css">
+
+
+
+
+
+?>
+    <style>
+        body {
+            margin: 0;
+            background: #f9fafb;
+        }
+
+        .manage-packages {
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .btn-primary {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            background: #2563eb;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        /* Card */
+        .table-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        /* Table */
+        table {
+            width: 60vw;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f3f4f6;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #4b5563;
+            text-align: left;
+        }
+
+        td {
+            padding: 16px;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        tbody tr {
+            border-top: 1px solid #f1f5f9;
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        /* Actions */
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .actions a {
+            color: #4f46e5;
+            text-decoration: none;
+        }
+
+        .actions a:hover {
+            color: #312e81;
+        }
+
+        .actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #ef4444;
+        }
+
+        .actions button:hover {
+            color: #b91c1c;
+        }
+
+        /* Pagination */
+        .pagination {
+            margin-top: 24px;
+            padding: 16px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pagination span {
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pagination-controls a {
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            color: #374151;
+            text-decoration: none;
+        }
+
+        .pagination-controls a:hover {
+            background: #f3f4f6;
+        }
+
+        .pagination-controls a.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+    </style>
 </head>
-<section class="min-h-screen p-6 bg-gray-50">
-    <header class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Manage Packages</h2>
-        <a href="newPackage.php" class="px-4 py-2 text-sm font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-700">
-            + New Package
-        </a>
+
+<body>
+
+<section class="manage-packages">
+    <header class="page-header">
+        <h2>Manage Packages</h2>
+        <a href="newPackage.php" class="btn-primary">+ New Package</a>
     </header>
 
-    <div class="overflow-hidden bg-white border border-gray-200 shadow-sm rounded-xl">
-        <table class="w-[60vw] text-left border-collapse">
-            <thead class="bg-gray-100 border-b border-gray-200">
+    <div class="table-card">
+        <table>
+            <thead>
                 <tr>
-                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase">S.N.</th>
-                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Package Name</th>
-                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Created At</th>
-                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Starting Date</th>
-                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Total Slots</th>
-                    <th class="px-4 py-3 text-xs font-semibold text-center text-gray-600 uppercase">Actions</th>
+                    <th>S.N.</th>
+                    <th>Package Name</th>
+                    <th>Created At</th>
+                    <th>Starting Date</th>
+                    <th class="center">Booked Slots</th>
+                    <th class="center">Total Slots</th>
+                    <th class="center">Actions</th>
                 </tr>
             </thead>
-         
+            <tbody>
+                <?php
+                if (isLoggedIn()) {
+                    $travelObj = new Travel($conn);
+                    $travelData = $travelObj->getAllAvailableTravelPackages();
 
+                    $totalRecords = count($travelData);
+                    $limit = 10;
+                    $totalPages = ceil($totalRecords / $limit);
 
-<tbody class="divide-y divide-gray-100">
-    <?php
-    if (isLoggedIn()) {
-        $travelObj = new Travel($conn);
-        $travelData = $travelObj->getAllAvailableTravelPackages();
-        $count = 0;
-        if (!empty($travelData)) {
+                    $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+                    $currentPage = max(1, min($currentPage, $totalPages));
 
-            foreach ($travelData as $b) {
-                $count++;
+                    $start = ($currentPage - 1) * $limit;
+                    $end   = min($start + $limit, $totalRecords);
+
+                    if ($totalRecords > 0) {
+                        for ($i = $start; $i < $end; $i++) {
+                            ?>
+                            <tr>
+                                <td><?= $i + 1 ?></td>
+                                <td><?= htmlspecialchars($travelData[$i]['name']) ?></td>
+                                <td><?= htmlspecialchars($travelData[$i]['created_at']) ?></td>
+                                <td><?= htmlspecialchars($travelData[$i]['starting_date']) ?></td>
+                                <td class="center"><?= htmlspecialchars($travelData[$i]['booked_slots']) ?></td>
+                                <td class="center"><?= htmlspecialchars($travelData[$i]['totalSlots']) ?></td>
+                                <td class="center">
+                                    <div class="actions">
+                                        <a href="editPackage.php?id=<?= $travelData[$i]['package_id'] ?>"><i class="fas fa-edit"></i></a>
+                                        <button onclick="confirmDelete('<?= $travelData[$i]['package_id'] ?>')"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php
+                        }
+                    } else {
+                        echo "<tr><td colspan='7' class='center'>No packages found.</td></tr>";
+                    }
+                }
                 ?>
-                <tr class="transition-colors hover:bg-gray-50">
-                    <td class="px-4 py-4 text-sm text-gray-700">
-                        <?php echo $count; ?>
-                    </td>
-                    <td class="px-4 py-4 text-sm font-medium text-gray-900">
-                        <?php echo htmlspecialchars($b['name']); ?>
-                    </td>
-                    <td class="px-4 py-4 text-sm text-gray-600">
-                        <?php echo htmlspecialchars($b['created_at']); ?>
-                    </td>
-                    <td class="px-4 py-4 text-sm text-gray-600">
-                        <?php echo htmlspecialchars($b['starting_date']); ?>
-                    </td>
-                 
-                    <td class="px-4 py-4 text-sm text-center text-gray-600">
-                        <?php echo htmlspecialchars($b['totalSlots']); ?>
-                    </td>
-                    <td class="px-4 py-4 text-sm text-center">
-                        <div class="flex justify-center space-x-3">
-                            <a href="editPackage.php?id=<?php echo $b['package_id']; ?>" class="text-indigo-600 transition hover:text-indigo-900">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <button type="button" 
-                                    onclick="confirmDelete(<?php echo $b['package_id']; ?>)" 
-                                    class="text-red-500 transition hover:text-red-700">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <?php 
-            } 
-        } else {
-            echo "<tr><td colspan='7' class='p-4 text-center'>No activities found.</td></tr>";
-        }
-    }
-    ?>
-</tbody>
+            </tbody>
         </table>
     </div>
 
-    <div class="flex items-center justify-between p-4 mt-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-        <span class="text-sm text-gray-600">Page 1 of 1</span>
-        <div class="flex space-x-2">
-            <button class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50" id="prevPage">
-                <i class="text-xs fas fa-chevron-left"></i>
-            </button>
-            <button class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100" id="nextPage">
-                <i class="text-xs fas fa-chevron-right"></i>
-            </button>
+    <?php if ($totalRecords > $limit): ?>
+        <div class="pagination">
+            <span>Page <?= $currentPage ?> of <?= $totalPages ?></span>
+
+            <div class="pagination-controls">
+                <a href="?page=<?= $currentPage - 1 ?>"
+                   class="<?= $currentPage == 1 ? 'disabled' : '' ?>"><i class="text-xs fas fa-chevron-left"></i></a>
+
+                <a href="?page=<?= $currentPage + 1 ?>"
+                   class="<?= $currentPage == $totalPages ? 'disabled' : '' ?>"><i class="text-xs fas fa-chevron-right"></i></a>
+            </div>
         </div>
-    </div>
+    <?php endif; ?>
+
 </section>
 
 <script>
+
 function confirmDelete(id) {
-    if (confirm('Are you sure you want to delete this activity?')) {
-        // Redirect to your delete handler script
-        window.location.href = `delete_activity.php?id=${id}`;
+    if (confirm("Are you sure you want to delete this package?")) {
+        window.location.href = "utility/deletePackage.php?id=" + id;
     }
 }
 </script>
+<?php
+require_once   "../components/Notificaton.php";
+$status = isset($_GET['status']) ? $_GET['status'] :"";
+if(!empty($status)){
+    if($status == 'success'){
+    showToast("Travel Package deleted successfully",'success');
+    }else if($status == 'fail'){
+    showToast("Unable to delete travel package",'error');
+    }
 
-<script src="./js/managebookings.js"></script>
+}
+?>

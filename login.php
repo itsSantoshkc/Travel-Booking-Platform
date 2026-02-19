@@ -50,13 +50,9 @@
 
       <div class="login-footer">
         <div class="create-account">
-          New User? <span id="goToSignup">Create an account</span>
+          New User? <a id="goToSignup" href="signup.php">Create an account</a>
         </div>
-        <div
-          class="forget-password"
-          onclick="alert('Forget Password feature coming soon!')">
-          Forgot Password?
-        </div>
+        
       </div>
 
       <button type="submit" class="login-button">Log In</button>

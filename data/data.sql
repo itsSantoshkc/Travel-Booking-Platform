@@ -17,7 +17,7 @@ CREATE TABLE User_Verification (
     verifiedAt DATETIME,
     token VARCHAR(6),
     verified TINYINT(1),
-    FOREIGN KEY (userId) REFERENCES User(userID) ON DELETE CASCADE
+    FOREIGN KEY (userId) REFERENCES User(userID) ON DELETE CASCADE ON DELETE CASCADE
 );
 
 -- Travel Package 
@@ -52,19 +52,19 @@ CREATE TABLE package_images (
     package_id VARCHAR(100),
     no_of_slots INT,
     booked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES User(userID),
-    FOREIGN KEY (package_id) REFERENCES travelPackages(package_id)
+      FOREIGN KEY (user_id) REFERENCES User(userID) ON DELETE CASCADE,
+    FOREIGN KEY (package_id) REFERENCES travelPackages(package_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Reviews (
     review_id VARCHAR(100) PRIMARY KEY,
     review VARCHAR(500),
     user_id VARCHAR(36),
-    rating INT,
+    rating INT DEFAULT 0,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     package_id VARCHAR(100),
-    FOREIGN KEY (user_id) REFERENCES User(userID),
-    FOREIGN KEY (package_id) REFERENCES travelPackages(package_id)
+    FOREIGN KEY (user_id) REFERENCES User(userID) ON DELETE CASCADE,
+    FOREIGN KEY (package_id) REFERENCES travelPackages(package_id) ON DELETE CASCADE
 );
     
 
