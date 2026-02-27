@@ -32,7 +32,8 @@ CREATE TABLE travelPackages (
     location VARCHAR(255),
     price DECIMAL(10, 2),
     description TEXT
-    totalSlots INT
+    totalSlots INT,
+    
 );
 
 CREATE TABLE package_images (
@@ -51,6 +52,7 @@ CREATE TABLE package_images (
     user_id VARCHAR(36),
     package_id VARCHAR(100),
     no_of_slots INT,
+    status ENUM("pending","approved","rejected") DEFAULT 'pending',
     booked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES User(userID) ON DELETE CASCADE,
     FOREIGN KEY (package_id) REFERENCES travelPackages(package_id) ON DELETE CASCADE

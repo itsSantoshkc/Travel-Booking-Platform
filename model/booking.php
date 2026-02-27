@@ -76,7 +76,7 @@ class Booking
     public function getBookingsByUserId($userId)
     {
 
-        $sql = "SELECT b.booking_id, b.no_of_slots, b.booked_at,t.starting_date,t.name as package_name, t.location, t.price
+        $sql = "SELECT b.booking_id, b.no_of_slots,b.status, b.booked_at,t.starting_date,t.name as package_name, t.location, t.price
             FROM booking b
             INNER JOIN travelpackages t ON b.package_id = t.package_id
             WHERE b.user_id = ?

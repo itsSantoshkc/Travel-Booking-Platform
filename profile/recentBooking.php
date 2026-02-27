@@ -158,6 +158,7 @@ include("../components/Navbar.php");
           <th>S.N.</th>
           <th>Name</th>
           <th>No of Slots</th>
+          <th>Status</th>
           <th>Travel Date</th>
           <th>Booked On</th>
         </tr>
@@ -176,6 +177,7 @@ include("../components/Navbar.php");
              <td>{$count}</td>
         <td>{$b['package_name']}</td>
         <td>{$b['no_of_slots']}</td>
+        <td>{$b['status']}</td>
         <td>{$b['starting_date']}</td>
         <td>{$date}</td>
           </tr>";

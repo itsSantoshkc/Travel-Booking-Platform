@@ -13,7 +13,7 @@
 </head>
 
 <?php 
-include __DIR__ . '/middleware/authMiddleware.php';
+require_once __DIR__ . '/middleware/authMiddleware.php';
 
 
 
